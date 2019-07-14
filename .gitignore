@@ -1,0 +1,9 @@
+assets/*
+*.sql
+*.nosql
+!assets/sample.mp4
+$RECYCLE.BIN/
+System\ Volume\ Information/
+sqlite3.dll
+sqlite3.def
+node_modules/
