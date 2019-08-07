@@ -2,13 +2,19 @@ const express = require('express')
 const fs = require('fs')
 const path = require('path')
 const app = express()
-const port = 80
+const port = 8080
 
 app.use(express.static(path.join(__dirname, 'public')))
 
 app.get('/', function(req, res) {
-  res.sendFile(path.join(__dirname + '/index.htm'))
+  var html = fs.readFileSync('static/base.head.html')
+  html += fs.readFileSync('static/login.html')
+  html+=fs.readFileSync('static/base.foot.html')
+  res.send(html)
+  //res.sendFile(path.join(__dirname + '/index.htm'))
 })
+
+app.post('/authenticate',require('routes/authenticate.js'))
 
 app.get('/video', function(req, res) {
   const path = 'assets/sample.mp4'
@@ -44,6 +50,6 @@ app.get('/video', function(req, res) {
   }
 })
 
-app.listen(80, function () {
-  console.log('Listening on port 80!')
+app.listen(port, function () {
+  console.log('Listening on port 8080!')
 })
