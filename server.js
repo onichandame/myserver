@@ -5,16 +5,30 @@ const app = express()
 const port = 8080
 
 app.use(express.static(path.join(__dirname, 'public')))
+app.use(express.urlencoded({extended: false}))
 
-app.get('/', function(req, res) {
+app.use(require(path.resolve(__dirname,"routes/error.js")))
+const auth=require(path.resolve(__dirname,'routes/auth.js'))
+
+app.get('/', auth.auth, function(req, res) {
   var html = fs.readFileSync('static/base.head.html')
-  html += fs.readFileSync('static/login.html')
+  html += fs.readFileSync('static/main.html')
   html+=fs.readFileSync('static/base.foot.html')
   res.send(html)
   //res.sendFile(path.join(__dirname + '/index.htm'))
 })
 
-app.post('/authenticate',require('routes/authenticate.js'))
+app.get('/auth', function(req, res) {
+  var html = fs.readFileSync('static/base.head.html')
+  html += fs.readFileSync('static/login.html')
+  html+=fs.readFileSync('static/base.foot.html')
+  res.send(html)
+})
+
+app.post('/auth',auth.authenticate,auth.authorise)
+
+app.get('/register',require(path.join(__dirname,'routes/register.js')).display)
+app.post('/register',require(path.join(__dirname,'routes/register.js')).register)
 
 app.get('/video', function(req, res) {
   const path = 'assets/sample.mp4'

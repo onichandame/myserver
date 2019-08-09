@@ -1,17 +1,19 @@
 <div class="container">
   <div class="row">
     <div class="col"></div>
-    <form class="col" action='/authenticate' method='post' name='login-form'>
+    <form class="col" action='/auth' method='post' name='login-form'>
       <div class="form-group col">
         <label for="username">Who are you</label>
-        <input type="text" class="form-control" id="username" placeholder="my name">
+        <input type="text" class="form-control" name="username" placeholder="my name">
       </div>
       <div class="form-group col">
         <label for="password">What is your code</label>
-        <input type="password" class="form-control" id="password" placeholder="my passphrase">
+        <input type="password" class="form-control" name="password" placeholder="my passphrase">
       </div>
       <div class="row">
-        <div class="col"></div>
+        <div class="col">
+          <a href='/register'>Register</a>
+        </div>
         <button type="submit" class="btn btn-primary col center-block">Login</button>
         <div class="col"></div>
       </div>
