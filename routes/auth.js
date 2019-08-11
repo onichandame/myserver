@@ -72,8 +72,8 @@ module.exports.authorise=function(req,res){
   const sqlite3=require('sqlite3').verbose()
   var token={info:{username:username}}
   token.expires_in=3600
-  token.access_token=generateToken(username)
   token.token_type="bearer"
+  token.created_at=Date.now().toString()
 
   let db=new sqlite3.Database(db_param.user.dbname,sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE,(err)=>{
     if (err)
@@ -102,12 +102,13 @@ module.exports.authorise=function(req,res){
             break
         }
         token.info.email=row.email
+        var aes256=require('aes256')
+        token.hash=generateToken(JSON.stringify(token))
         res.set('Authorisation',JSON.stringify(token))
 
         const DB=require('tingodb')().Db()
         var db=newDB(db_param.token.dbname,{})
         var col=db.collection(db_param.colname)
-        token.created_at=Date.now().toString()
         col.insertOne(token,(err,result)=>{
           res.redirect('/')
         })
@@ -118,21 +119,17 @@ module.exports.authorise=function(req,res){
 
 function validate(token){
   try{
-    var obj=JSON.parse(token)
-    if(!(obj.access_token&&obj.token_type&&obj.expires_in&&obj.scope&&obj.info))
+    var obj=decodeToken(token)
+    if(!obj)
       throw 'invalide token'
-    const db_param=require(path.resolve(__dirname,'db.js')).token
-    var DB=require('tingodb')().Db
-    var db=new DB(db_param.dbname,{})
-    var col=db.collection(db_param.colname)
-    col.findOne({access_token:obj.access_token},(err,item)=>{
-      if(!item||err)
-        return false 
-      const creation=new Date(item.created_at)
-      const timediff=(Date.now()-creation)/1000
-      if(timediff>token.expires_in)
-        return false 
-    })
+    const hash=obj.hash
+    delete obj.hash
+    if(generateToken(obj)!=hash)
+      throw 'invalid signature'
+    var time=Date.parse(obj.created_at)
+    time.setSeconds(time.getSeconds()+obj.expires_in)
+    if(time>Date.now())
+      throw 'expired token'
   }catch(e){
     return false
   }
@@ -141,7 +138,19 @@ function validate(token){
 
 let token_key='jGtk6BQRKCtTBTwvBgIPSYDv8XMeahRj'
 
-function generateToken(username){
+function generateToken(obj){
   var aes256=require('aes256')
-  return aes256.encrypt(token_key,username+Date.now().toString())
+  if(typeof obj==='string')
+    return aes256.encrypt(token_key,obj)
+  else
+    return aes256.encrypt(token_key,JSON.string(obj))
+}
+
+function decodeToken(obj){
+  var aes256=require('aes256')
+  try{
+    return JSON.parse(aes256.decrypt(token_key,obj))
+  }catch(e){
+    return false
+  }
 }
