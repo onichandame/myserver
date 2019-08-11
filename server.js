@@ -15,7 +15,6 @@ app.get('/', auth.auth, function(req, res) {
   html += fs.readFileSync('static/main.html')
   html+=fs.readFileSync('static/base.foot.html')
   res.send(html)
-  //res.sendFile(path.join(__dirname + '/index.htm'))
 })
 
 app.get('/auth', function(req, res) {

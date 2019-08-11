@@ -5,8 +5,31 @@
   </button>
   <div class="collapse navbar-collapse" id="overbar">
     <ul class="navbar-nav mr-auto">
+      <li class="dropdown">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Gallery<span class="caret"></span></a>
+        <ul class="dropdown-menu">
+          <li><a href="/documents">Documents</a></li>
+          <li role="separator" class="divider"></li>
+          <li><a href="/camera">DCIM</a></li>
+          <li role="separator" class="divider"></li>
+          <li><a href="/videos">Videos</a></li>
+        </ul>
+      </li>
       <li class="nav-item active">
-        <a class="nav-link" href="resume">Resume<span class="sr-only">(current)</span></a>
+        <a class="nav-link" href="/about">about</a>
+      </li>
+      <li class="nav-item active">
+        <a class="nav-link" href="/resume">Resume</a>
+      </li>
+    </ul>
+    <ul class="nav navbar-nav navbar-right">
+      <li class="dropdown">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Account<span class="caret"></span></a>
+        <ul class="dropdown-menu">
+          <li><a href="/profile">Profile</a></li>
+          <li role="separator" class="divider"></li>
+          <li><a href="/logout">Log out</a></li>
+        </ul>
       </li>
     </ul>
   </div>
