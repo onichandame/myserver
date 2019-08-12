@@ -5,6 +5,9 @@ const app = express()
 const port = 8080
 const cookieParser=require('cookie-parser')
 
+app.set('views','views')
+app.set('view engine','pug')
+
 app.use(express.static(path.join(__dirname, 'public')))
 app.use(express.urlencoded({extended: false}))
 app.use(cookieParser())
@@ -12,9 +15,8 @@ app.use(cookieParser())
 app.use(require(path.resolve(__dirname,"routes/error.js")))
 const auth=require(path.resolve(__dirname,'routes/auth.js'))
 
-app.set('view engine','pug')
-
 app.get('/', auth.auth, function(req, res) {
+  const scope=res.get('Authorisation')
   res.render('base.main.pug')
 })
 
@@ -26,6 +28,10 @@ app.post('/auth',auth.authenticate,auth.authorise,auth.validated)
 
 app.get('/register',require(path.join(__dirname,'routes/register.js')).display)
 app.post('/register',require(path.join(__dirname,'routes/register.js')).register)
+
+app.get('/about',auth.auth,(req,res)=>{
+  res.render('about.main.pug')
+})
 
 app.get('/video', function(req, res) {
   const path = 'assets/sample.mp4'

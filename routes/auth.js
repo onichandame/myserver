@@ -1,9 +1,10 @@
 module.exports.auth=function(req,res,next){
   const token=req.cookies.token
   if(validate(token))
-    next()
+    res.set('Authorisation',true)
   else 
-    res.redirect('/auth')
+    res.set('Authorisation',false)
+  next()
 }
 
 module.exports.authenticate=function(req,res,next){
@@ -84,20 +85,7 @@ module.exports.authorise=function(req,res,next){
       if(rows.length!=1)
         next(err)
       const row=rows[0]
-      switch(row.level){
-        case 0:
-          token.scope='admin'
-          break
-        case 1:
-          token.scope='user'
-          break
-        case 2:
-          token.scope='guest'
-          break
-        default:
-          next(err)
-          break
-      }
+      token.scope=row.level
       token.info.email=row.email
       token.hash=generateToken(token)
       res.set('Authorisation',JSON.stringify(token))
@@ -125,6 +113,8 @@ function validate(hash){
     time.setSeconds(time.getSeconds()+token.expires_in)
     if(time<new Date())
       throw 'expired token'
+    if(!token.hasOwnProperty('scope'))
+      throw 'invalide token(no scope)'
   }catch(e){
     console.log(e)
     return false
