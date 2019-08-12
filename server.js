@@ -3,28 +3,26 @@ const fs = require('fs')
 const path = require('path')
 const app = express()
 const port = 8080
+const cookieParser=require('cookie-parser')
 
 app.use(express.static(path.join(__dirname, 'public')))
 app.use(express.urlencoded({extended: false}))
+app.use(cookieParser())
 
 app.use(require(path.resolve(__dirname,"routes/error.js")))
 const auth=require(path.resolve(__dirname,'routes/auth.js'))
 
+app.set('view engine','pug')
+
 app.get('/', auth.auth, function(req, res) {
-  var html = fs.readFileSync('static/base.head.html')
-  html += fs.readFileSync('static/main.html')
-  html+=fs.readFileSync('static/base.foot.html')
-  res.send(html)
+  res.render('base.main.pug')
 })
 
 app.get('/auth', function(req, res) {
-  var html = fs.readFileSync('static/base.head.html')
-  html += fs.readFileSync('static/login.html')
-  html+=fs.readFileSync('static/base.foot.html')
-  res.send(html)
+  res.render('login.auth.pug')
 })
 
-app.post('/auth',auth.authenticate,auth.authorise)
+app.post('/auth',auth.authenticate,auth.authorise,auth.validated)
 
 app.get('/register',require(path.join(__dirname,'routes/register.js')).display)
 app.post('/register',require(path.join(__dirname,'routes/register.js')).register)

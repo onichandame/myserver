@@ -1,12 +1,9 @@
 module.exports.auth=function(req,res,next){
-  const token=req.get('Authorization')
-  if(!token){
+  const token=req.cookies.token
+  if(validate(token))
+    next()
+  else 
     res.redirect('/auth')
-  }else{
-    if(!validate(token))
-      res.redirect('/auth')
-  }
-  next()
 }
 
 module.exports.authenticate=function(req,res,next){
@@ -51,9 +48,10 @@ module.exports.authenticate=function(req,res,next){
             hash.update(password)
             const salt=hash.digest('hex')
             rows.forEach((row)=>{
-              if(row.password==salt){
-                next()
+              if(row.password!=salt){
+                next(err)
               }
+              next()
               //Handle return
             })
           }
@@ -63,9 +61,9 @@ module.exports.authenticate=function(req,res,next){
   })
 }
 
-module.exports.authorise=function(req,res){
+module.exports.authorise=function(req,res,next){
 
-  const username=req.query.username
+  const username=req.body.username
 
   const path=require('path')
   const db_param=require(path.resolve(__dirname,"db.js"))
@@ -73,64 +71,62 @@ module.exports.authorise=function(req,res){
   var token={info:{username:username}}
   token.expires_in=3600
   token.token_type="bearer"
-  token.created_at=Date.now().toString()
+  token.created_at=new Date().toString()
 
   let db=new sqlite3.Database(db_param.user.dbname,sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE,(err)=>{
     if (err)
       next(err)
   })
   db.serialize(function(){
-    db.all('SELECT level,active FROM '+db_param.user.tblname+' WHERE username=\''+username+'\')',(err,rows)=>{
+    db.all('SELECT email,level,active FROM '+db_param.user.tblname+' WHERE username=\''+username+'\'',(err,rows)=>{
       if(err)
         next(err)
       if(rows.length!=1)
         next(err)
-      rows.forEach((row)=>{
-        const lvl=row.level
-        switch(lvl){
-          case 0:
-            token.scope='admin'
-            break
-          case 1:
-            token.scope='user'
-            break
-          case 2:
-            token.scope='guest'
-            break
-          default:
-            next(err)
-            break
-        }
-        token.info.email=row.email
-        var aes256=require('aes256')
-        token.hash=generateToken(JSON.stringify(token))
-        res.set('Authorisation',JSON.stringify(token))
+      const row=rows[0]
+      switch(row.level){
+        case 0:
+          token.scope='admin'
+          break
+        case 1:
+          token.scope='user'
+          break
+        case 2:
+          token.scope='guest'
+          break
+        default:
+          next(err)
+          break
+      }
+      token.info.email=row.email
+      token.hash=generateToken(token)
+      res.set('Authorisation',JSON.stringify(token))
 
-        const DB=require('tingodb')().Db()
-        var db=newDB(db_param.token.dbname,{})
-        var col=db.collection(db_param.colname)
-        col.insertOne(token,(err,result)=>{
-          res.redirect('/')
-        })
-      })
+      next()
     })
   })
 }
 
-function validate(token){
+module.exports.validated=function(req,res,next){
+  let cp=require('cookie-parser')
+  const token=JSON.parse(res.get('Authorisation'))
+  var time=new Date(token.created_at)
+  time.setSeconds(time.getSeconds()+token.expires_in)
+  res.cookie("token",token.hash,{expires:time})
+  res.render('success.login.pug')
+}
+
+function validate(hash){
   try{
-    var obj=decodeToken(token)
-    if(!obj)
+    const token=decodeToken(hash)
+    if(!token)
       throw 'invalide token'
-    const hash=obj.hash
-    delete obj.hash
-    if(generateToken(obj)!=hash)
-      throw 'invalid signature'
-    var time=Date.parse(obj.created_at)
-    time.setSeconds(time.getSeconds()+obj.expires_in)
-    if(time>Date.now())
+    var time=new Date(token.created_at)
+    time.setSeconds(time.getSeconds()+token.expires_in)
+    if(time<new Date())
       throw 'expired token'
   }catch(e){
+    console.log(e)
     return false
   }
   return true
@@ -143,7 +139,7 @@ function generateToken(obj){
   if(typeof obj==='string')
     return aes256.encrypt(token_key,obj)
   else
-    return aes256.encrypt(token_key,JSON.string(obj))
+    return aes256.encrypt(token_key,JSON.stringify(obj))
 }
 
 function decodeToken(obj){
