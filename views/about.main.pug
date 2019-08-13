@@ -1,7 +1,26 @@
-extends base.main.pug
+extends base.main.pug 
 
 block main
-  h2
-    a(class="btn btn-primary",role="button",href="https://github.com/onichandame/personalweb") Source
-  h4
-    a(class="btn btn-info",role="button",href="https://github.com/onichandame/personalweb/blob/master/LICENSE") LICENSE
+  div(class="col")
+    div(class="row")
+      img(class="img-fluid",src="resume-main.jpeg",alt="selfie",style="width:100%")
+      div(class="carousel-caption")
+        h1(class="font-weight-bold") Xiao Zhang
+        h4 Developer and Researcher
+    div(class="row text-center")
+      h3 Welcome!
+      p Thanks for stopping by. Here you can find some work and programs I've made. The links below are for you if you would like to get in touch!
+    div(class="row")
+      div(class="col card",style="width: 18rem;")
+        include github.icon.pug
+        div(class="card-body")
+          h5(class="card-title") DICOM Toolkit
+          p(class="card-text") This toolkit written in Python is designed to read/write DICOM CT/RS files. It has been tested against real-case CT/RS datasets.
+          a(class="btn btn-info",role="button",href="https://github.com/onichandame/dcmio") Go to repo
+      div(class="col card",style="width: 18rem;")
+        include github.icon.pug
+        div(class="card-body")
+          h5(class="card-title") This Website
+          p(class="card-text") The source code of this website which is solely based on Node.js, Express.js, Bootstrap and Pug
+          a(class="btn btn-info",role="button",href="https://github.com/onichandame/personalweb") Go to repo
+      div(class="col")

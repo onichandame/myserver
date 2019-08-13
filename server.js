@@ -17,7 +17,7 @@ const auth=require(path.resolve(__dirname,'routes/auth.js'))
 
 app.get('/', auth.auth, function(req, res) {
   const scope=res.get('Authorisation')
-  res.render('base.main.pug')
+  res.render('base.main.pug',{scope:res.get('Authorisation')})
 })
 
 app.get('/auth', function(req, res) {
@@ -30,7 +30,7 @@ app.get('/register',require(path.join(__dirname,'routes/register.js')).display)
 app.post('/register',require(path.join(__dirname,'routes/register.js')).register)
 
 app.get('/about',auth.auth,(req,res)=>{
-  res.render('about.main.pug')
+  res.render('about.main.pug',{scope:res.get('Authorisation')})
 })
 
 app.get('/video', function(req, res) {

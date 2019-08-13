@@ -8,8 +8,6 @@ block overbar
     div(class="collapse navbar-collapse",id="overbar")
       ul(class="navbar-nav mr-auto")
         li(class="nav-item active")
-          a(class="nav-link",href="/resume") Resume
-        li(class="nav-item active")
           a(class="nav-link",href="/about") About
         li(class="nav-item dropdown")
           a(href="#",class="nav-link dropdown-toggle",data-toggle="dropdown",aria-haspopup="true",aria-expanded="false") Gallery
@@ -26,7 +24,11 @@ block overbar
       div(class="dropdown-divider")
       ul(class="nav navbar-nav navbar-right")
         li(class="dropdown")
-          a(href="#",class="nav-link dropdown-toggle",data-toggle="dropdown",role="button",aria-haspopup="true",aria-expanded="false") Account
+          #scope
+          if scope<0
+            a(class="nav-link",role="button",href="/auth") Login
+          else
+            a(href="#",class="nav-link dropdown-toggle",data-toggle="dropdown",role="button",aria-haspopup="true",aria-expanded="false") Account
             span(class="caret")
           ul(class="dropdown-menu")
             li

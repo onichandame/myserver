@@ -1,9 +1,6 @@
 module.exports.auth=function(req,res,next){
   const token=req.cookies.token
-  if(validate(token))
-    res.set('Authorisation',true)
-  else 
-    res.set('Authorisation',false)
+  res.set('Authorisation',validate(token))
   next()
 }
 
@@ -115,11 +112,11 @@ function validate(hash){
       throw 'expired token'
     if(!token.hasOwnProperty('scope'))
       throw 'invalide token(no scope)'
+    return token.scope
   }catch(e){
     console.log(e)
-    return false
+    return -1
   }
-  return true
 }
 
 let token_key='jGtk6BQRKCtTBTwvBgIPSYDv8XMeahRj'
