@@ -114,7 +114,6 @@ function validate(hash){
       throw 'invalide token(no scope)'
     return token.scope
   }catch(e){
-    console.log(e)
     return -1
   }
 }

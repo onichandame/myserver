@@ -1,4 +1,11 @@
-.no-gutter{
-  margin-left: 0;
-  margin-right: 0;
+.img-profile{
+  position: relative;
+  text-align: center;
+  color: white;
+}
+.img-profile .bottom-caption{
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translate(-50%,0);
 }

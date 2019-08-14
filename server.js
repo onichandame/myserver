@@ -16,7 +16,6 @@ app.use(require(path.resolve(__dirname,"routes/error.js")))
 const auth=require(path.resolve(__dirname,'routes/auth.js'))
 
 app.get('/', auth.auth, function(req, res) {
-  const scope=res.get('Authorisation')
   res.render('base.main.pug',{scope:res.get('Authorisation')})
 })
 
@@ -31,6 +30,10 @@ app.post('/register',require(path.join(__dirname,'routes/register.js')).register
 
 app.get('/about',auth.auth,(req,res)=>{
   res.render('about.main.pug',{scope:res.get('Authorisation')})
+})
+
+app.get('/project',auth.auth,(req,res)=>{
+  res.render('project.main.pug',{scope:res.get('Authorisation')})
 })
 
 app.get('/video', function(req, res) {
