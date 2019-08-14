@@ -8,3 +8,4 @@ sqlite3.dll
 sqlite3.def
 node_modules/
 db
+*.swp
