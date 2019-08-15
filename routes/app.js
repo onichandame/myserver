@@ -9,9 +9,11 @@ function worklog(req,res){
   let token=require(path.resolve(__dirname,'auth.js')).decodeToken(req.cookies.token)
   if(req.path.includes('tasklist')){
     res.set('Content-Type','application/json')
-    res.json(worklogGetTask(cookies.info.username))
+    res.json(worklogGetTask(token))
   }
 }
-function worklogGetTask(username){
-  if(username)
+function worklogGetTask(token){
+  if(token.info.username=='guest')
+    return
+  else
 }
