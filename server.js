@@ -39,6 +39,8 @@ app.get('/project',(req,res)=>{
   rd(req,res,'project.main.pug')
 })
 
+app.get('/app',require(path.resolve(__dirname,'routes/app.js')))
+
 app.get('/diary',(req,res)=>{
   rd(req,res,'diary.app.pug')
 })
