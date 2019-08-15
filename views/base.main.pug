@@ -1,5 +1,6 @@
 extends base.pug
 
+
 block overbar
   header
     nav(class="navbar navbar-expand-lg navbar-light bg-secondary")
@@ -12,8 +13,7 @@ block overbar
             a(class="nav-link",href="/project") Projects
           li(class="nav-item active")
             a(class="nav-link",href="/about") About
-          #scope
-          if scope>0
+          if auth.scope>0
             li(class="nav-item dropdown")
               a(href="#",class="nav-link dropdown-toggle",data-toggle="dropdown",aria-haspopup="true",aria-expanded="false") Gallery
                 span(class="caret")
@@ -29,8 +29,7 @@ block overbar
         div(class="dropdown-divider")
         ul(class="nav navbar-nav navbar-right")
           li(class="dropdown")
-            #scope
-            if scope<0
+            if auth.scope<0
               a(class="nav-link",role="button",href="/auth") Login
             else
               a(href="#",class="nav-link dropdown-toggle",data-toggle="dropdown",role="button",aria-haspopup="true",aria-expanded="false") Account

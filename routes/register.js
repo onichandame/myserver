@@ -1,13 +1,4 @@
-module.exports.display=function(req,res,next){
-  const fs=require('fs')
-  const path=require('path')
-  var html=fs.readFileSync(path.resolve(__dirname,'../static/base.head.html'))
-  html+=fs.readFileSync(path.resolve(__dirname,'../static/register.html'))
-  html+=fs.readFileSync(path.resolve(__dirname,'../static/base.foot.html'))
-  res.send(html)
-}
-
-module.exports.register=function(req,res,next){
+module.exports=function(req,res,next){
   const path=require('path')
   const db_param=require(path.resolve(__dirname,"db.js"))
 

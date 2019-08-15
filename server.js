@@ -2,6 +2,7 @@ const express = require('express')
 const fs = require('fs')
 const path = require('path')
 const app = express()
+const rd=require(path.resolve(__dirname,'utility/render.js'))
 const port = 8080
 const cookieParser=require('cookie-parser')
 
@@ -15,25 +16,31 @@ app.use(cookieParser())
 app.use(require(path.resolve(__dirname,"routes/error.js")))
 const auth=require(path.resolve(__dirname,'routes/auth.js'))
 
-app.get('/', auth.auth, function(req, res) {
-  res.render('base.main.pug',{scope:res.get('Authorisation')})
+app.get('/',  (req, res)=>{
+  rd(req,res,'base.main.pug')
 })
 
 app.get('/auth', function(req, res) {
-  res.render('login.auth.pug')
+  rd(req,res,'login.auth.pug')
 })
 
 app.post('/auth',auth.authenticate,auth.authorise,auth.validated)
 
-app.get('/register',require(path.join(__dirname,'routes/register.js')).display)
-app.post('/register',require(path.join(__dirname,'routes/register.js')).register)
+app.get('/register',(req,res)=>{
+  res.render('register.auth.pug')
+})
+app.post('/register',require(path.join(__dirname,'routes/register.js')))
 
-app.get('/about',auth.auth,(req,res)=>{
-  res.render('about.main.pug',{scope:res.get('Authorisation')})
+app.get('/about',(req,res)=>{
+  rd(req,res,'about.main.pug')
 })
 
-app.get('/project',auth.auth,(req,res)=>{
-  res.render('project.main.pug',{scope:res.get('Authorisation')})
+app.get('/project',(req,res)=>{
+  rd(req,res,'project.main.pug')
+})
+
+app.get('/diary',(req,res)=>{
+  rd(req,res,'diary.app.pug')
 })
 
 app.get('/video', function(req, res) {

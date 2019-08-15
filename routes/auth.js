@@ -1,9 +1,3 @@
-module.exports.auth=function(req,res,next){
-  const token=req.cookies.token
-  res.set('Authorisation',validate(token))
-  next()
-}
-
 module.exports.authenticate=function(req,res,next){
   const path=require('path')
 
@@ -101,23 +95,6 @@ module.exports.validated=function(req,res,next){
   res.render('success.login.pug')
 }
 
-function validate(hash){
-  try{
-    const token=decodeToken(hash)
-    if(!token)
-      throw 'invalide token'
-    var time=new Date(token.created_at)
-    time.setSeconds(time.getSeconds()+token.expires_in)
-    if(time<new Date())
-      throw 'expired token'
-    if(!token.hasOwnProperty('scope'))
-      throw 'invalide token(no scope)'
-    return token.scope
-  }catch(e){
-    return -1
-  }
-}
-
 let token_key='jGtk6BQRKCtTBTwvBgIPSYDv8XMeahRj'
 
 function generateToken(obj){
@@ -128,11 +105,22 @@ function generateToken(obj){
     return aes256.encrypt(token_key,JSON.stringify(obj))
 }
 
-function decodeToken(obj){
+module.exports.decodeToken=function(obj){
   var aes256=require('aes256')
+  let token={}
   try{
-    return JSON.parse(aes256.decrypt(token_key,obj))
+    token=JSON.parse(aes256.decrypt(token_key,obj))
+    if(!token)
+      throw 'invalide token:'
+    var time=new Date(token.created_at)
+    time.setSeconds(time.getSeconds()+token.expires_in)
+    if(time<new Date())
+      throw 'expired token'
+    if(!token.hasOwnProperty('scope'))
+      throw 'invalide token(no scope)'
   }catch(e){
-    return false
+    token.info={username:'guest'}
+    token.scope=-1
   }
+  return token
 }
