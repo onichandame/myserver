@@ -1,9 +1,8 @@
 var meta={task:{dirty:false,
                 aboutToUpdate:true,
                 url:'/app/worklog/tasklist'}}
-function mainLoop(){
-//Use jQuery
-}
+
+syncTaskList()
 function syncTaskList(){
   send(meta.task.url,(res)=>{
     var tasks=JSON.parse(res)
@@ -26,6 +25,7 @@ function send(url,callback){
     req=new XMLHttpRequest()
   req.onreadystatechange=function(){
     req.responseType='text'
+alert(req.readyState)
     if(req.readyState==4&&req.status=='200')
       if(callback)
         callback(req.response)
