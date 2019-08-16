@@ -1,6 +1,6 @@
 var meta={task:{dirty:false,
                 aboutToUpdate:true,
-                url:'/app/worklog/tasklist'}}
+                url:window.location.protocol+'/'+window.location.host+'/app/worklog/tasklist'}}
 
 syncTaskList()
 function syncTaskList(){
@@ -18,6 +18,7 @@ function syncTaskList(){
   })
 }
 function send(url,callback){
+  alert(url)
   var req 
   if(window.ActiveXObject || "ActiveXObject" in window)
     req=new ActiveXObject("Microsoft.XMLHTTP")

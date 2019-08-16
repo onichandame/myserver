@@ -1,4 +1,5 @@
 module.exports=function(req,res){
+  console.log('hellp')
   const path=require('path')
   const token=require(path.resolve(__dirname,'auth.js')).decodeToken(req.cookies.token)
   if(req.path.includes('tasklist')){
