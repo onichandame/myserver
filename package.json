@@ -12,6 +12,7 @@
   "author": "daspinola",
   "license": "MIT",
   "dependencies": {
+    "cookie-parser": "^1.4.4",
     "express": "^4.15.3",
     "mysql": "^2.17.1",
     "nodemon": "^1.11.0",
