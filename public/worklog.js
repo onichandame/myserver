@@ -1,9 +1,23 @@
-var task={dirty:false,
-          aboutToUpdate:true,
-          url:'/app/worklog/tasklist'}
-send(task.url,(res)=>{
-  JSON.parse(res)
-})
+var meta={task:{dirty:false,
+                aboutToUpdate:true,
+                url:'/app/worklog/tasklist'}}
+function mainLoop(){
+//Use jQuery
+}
+function syncTaskList(){
+  send(meta.task.url,(res)=>{
+    var tasks=JSON.parse(res)
+    tasks.sort((a,b)=>(a.importance > b.importance) ? -1 : (a.created_at<=b.created_at) ? -1 : 1)
+    for(var i of tasks){
+      var node=document.createElement("LI")
+      var textnode=document.createTextNode(i.description)
+      const className='list-group-item'
+      node.appendChild(textnode)
+      node.className+=className
+      document.getElementById('tasklist').appendChild(node)
+    }
+  })
+}
 function send(url,callback){
   var req 
   if(window.ActiveXObject || "ActiveXObject" in window)

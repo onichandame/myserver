@@ -7,6 +7,3 @@ module.exports.user={tblname : "TableUser",
                             level : "INT NOT NULL",
                             creation_date : "TEXT NOT NULL"}
                     }
-module.exports.token={dbname : require('path').resolve(__dirname,'../db/token.lvl'),
-                      colname : 'token'
-}
