@@ -1,6 +1,6 @@
 var meta={task:{dirty:false,
                 aboutToUpdate:true,
-                url:window.location.protocol+'/'+window.location.host+'/app/worklog/tasklist'}}
+                url:'/app/worklog/tasklist'}}
 
 syncTaskList()
 function syncTaskList(){
