@@ -5,14 +5,13 @@ var meta={task:{dirty:false,
                aboutToUpdate:true,
                url:'diary'}}
 
-$(document).ready(function(){
-    alert("1")
-  $(".selection list-group-item").click(function(){
+$(document).ready(function (){
+  $(".selection .list-group-item").click(function(){
     $that=$(this)
     $that.parent().find('li').removeClass('active')
     $that.addClass('active')
   })
-}
+})
 sync()
 function sync(){
   syncTaskList()
@@ -26,6 +25,9 @@ function syncTaskList(){
     if(xhr.status!=200){
       alert('Error: '+xhr.status)
     }else{
+      const list=document.getElementById("tasklist")
+      while(list.firstChild)
+        list.removeChild(list.firstChild)
       var tasks=JSON.parse(xhr.response)
       if(tasks.length>1)
         tasks.sort((a,b)=>(a.importance > b.importance) ? -1 : (a.created_at<=b.created_at) ? -1 : 1)
@@ -34,8 +36,9 @@ function syncTaskList(){
         var textnode=document.createTextNode(i.description)
         const className='list-group-item'
         node.appendChild(textnode)
+        node.id=i.id
         node.className+=className
-        document.getElementById('tasklist').appendChild(node)
+        list.appendChild(node)
       }
     }
   }
@@ -51,6 +54,9 @@ function syncDiary(){
     if(xhr.status!=200){
       alert('Error: '+xhr.status)
     }else{
+      const list=document.getElementById("diary")
+      while(list.firstChild)
+        list.removeChild(list.firstChild)
       var logs=JSON.parse(xhr.response)
       if(logs.length>1)
         logs.sort((a,b)=>(a.committed_at > b.committed_at) ? -1 :1)
@@ -59,7 +65,7 @@ function syncDiary(){
         var textnode=document.createTextNode(i.fulltext)
         const className='list-grout-item'
         node.appendChild(textnode)
-        document.getElementById('diary').appendChild(node)
+        list.appendChild(node)
       }
     }
   }
@@ -69,6 +75,26 @@ function syncDiary(){
 }
 function submit(){
   let comment=document.getElementById("inp").value 
+  const id=document.getElementsByClassName("active").id
   let xhr=new XMLHttpRequest()
-  xhr.open('POST',)
+  xhr.open('POST',meta.log.url)
+  let tar={id:id,
+           comment:comment}
+  xhr.send(JSON.stringify(tar))
+  xhr.onload=function(){
+    syncDiary()
+  }
+}
+function create(){
+  let description=document.getElementById("description").value 
+  const selection=document.getElementById("importance")
+  const importance=selection.options[selection.selectedIndex].value
+  let xhr=new XMLHttpRequest()
+  xhr.open('POST',meta.task.url)
+  let tar={importance:importance,
+           description:description}
+  xhr.send(JSON.stringify(tar))
+  xhr.onload=function(){
+    syncTaskList()
+  }
 }

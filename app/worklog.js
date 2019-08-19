@@ -2,10 +2,13 @@ module.exports=function(req,res){
   const path=require('path')
   const token=require(path.resolve(__dirname,'../routes/auth.js')).decodeToken(req.cookies.token)
   if(req.path.includes('tasklist')){
-    console.log(token)
-    res.set('Content-Type','application/json')
-    res.status(200)
-    res.json(worklogGetTask(token))
+    if(req.method.includes('GET')){
+      res.set('Content-Type','application/json')
+      res.status(200)
+      res.json(worklogGetTask(token))
+    }else if(req.method.includes('POST')){
+    }
+  }else if(req.path.includes('diary')){
   }else{
     require(path.resolve(__dirname,'../utility/render.js'))(req,res,'worklog.app.pug')
   }

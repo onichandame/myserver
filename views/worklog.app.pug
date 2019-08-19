@@ -15,13 +15,30 @@ block main
   if auth.scope>0
     script(src="/worklog.js")
     div(class="row")
-      ul(class="col list-group selection",id="tasklist")
-        li(class="list-group-item") hello
-        li(class="list-group-item") hello
-        li(class="list-group-item dropdown")
-          a(href="#",class="nav-link dropdown-toggle",data-toggle="dropdown",aria-haspopup="true",aria-expanded="false") Task2
-          div(class="dropdown-menu")
-            a(class="dropdown-item") subtask
+      div(class="col")
+        ul(class="list-group selection",id="tasklist")
+          li(class="list-group-item") hello
+          li(class="list-group-item") hello
+          li(class="list-group-item dropdown")
+            a(href="#",class="nav-link dropdown-toggle",data-toggle="dropdown",aria-haspopup="true",aria-expanded="false") Task2
+            div(class="dropdown-menu")
+              a(class="dropdown-item") subtask
+        button(class="btn btn-outline-secondary",type="button",data-toggle="modal",data-target="#newTask") New Task
+        div(class="modal fade",id="newTask",role="dialog")
+          div(class="modal-dialog")
+            div(class="modal-content")
+              div(class="modal-header")
+                h4(class="modal-title text-left") New Task
+                button(type="button",class="close",data-dismiss="modal") &times;
+              div(class="modal-body col")
+                select(class="form-control row ml-1")
+                  option(value="0") primary
+                  option(value="1") auxiliary
+                  option(value="2") part-time
+                div(class="input-group mb-3 ml-1")
+                  input(type="text",class="form-control",placeholder="task descriptioin",id="description")
+                  div(class="input-group-append")
+                    button(class="btn btn-outline-primary",type="button",onclick="create()",data-dismiss="modal") Create Task
       div(class="col")
         ul(class="list-group",id="diary")
           li(class="list-group-item") log1

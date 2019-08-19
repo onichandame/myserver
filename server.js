@@ -37,6 +37,8 @@ app.get('/about',(req,res)=>{
 
 app.get(/\/app/,require(path.resolve(__dirname,'app/main.js')))
 
+app.post(/\/app/,require(path.resolve(__dirname,'app/main.js')))
+
 app.get('/video', function(req, res) {
   const path = 'assets/sample.mp4'
   const stat = fs.statSync(path)
