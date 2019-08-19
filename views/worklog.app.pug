@@ -1,0 +1,42 @@
+extends base.pug
+block overbar
+  nav(class="navbar navbar-expand-lg navbar-light bg-secondary justify-content-between")
+    img(class="navbar-brand",src="/worklog.jpg",style="height:50px")
+    div(class="dropdown")
+      a(href="#",class="text-white nav-link dropdown-toggle",data-toggle="dropdown",aria-haspopup="true",aria-expanded="false") #{auth.info.username}
+      ul(class="dropdown-menu bg-dark")
+        li
+          if auth.scope<0
+            a(class="nav-link text-white",href="/auth") Login
+          else
+            a(class="nav-link text-white",href="/logout") Logout
+        li(role="separator",class="divider")
+block main
+  if auth.scope>0
+    script(src="/worklog.js")
+    div(class="row")
+      ul(class="col list-group selection",id="tasklist")
+        li(class="list-group-item") hello
+        li(class="list-group-item") hello
+        li(class="list-group-item dropdown")
+          a(href="#",class="nav-link dropdown-toggle",data-toggle="dropdown",aria-haspopup="true",aria-expanded="false") Task2
+          div(class="dropdown-menu")
+            a(class="dropdown-item") subtask
+      div(class="col")
+        ul(class="list-group",id="diary")
+          li(class="list-group-item") log1
+          li(class="list-group-item") log2
+        div(class="input-group mb-3")
+          input(type="text",class="form-control",placeholder="comment...",aria-label="comment",id="inp")
+          div(class="input-group-append")
+            button(class="btn btn-outline-primary",type="button",onclick="submit()") Finish
+      div(class="col")
+        div(class="status")
+        div(class="row")
+          div(class="col")
+            div(class="finish")
+            div(class="select")
+          div(class="col dibout")
+  else
+    div(class="row about")
+block foot

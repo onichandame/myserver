@@ -35,18 +35,7 @@ app.get('/about',(req,res)=>{
   rd(req,res,'about.main.pug')
 })
 
-app.get('/project',(req,res)=>{
-  rd(req,res,'project.main.pug')
-})
-
-//app.get('/app',require(path.resolve(__dirname,'routes/app.js')))
-app.get('/app',(req,res)=>{
-  console.log('hello')
-})
-
-app.get('/diary',(req,res)=>{
-  rd(req,res,'diary.app.pug')
-})
+app.get(/\/app/,require(path.resolve(__dirname,'app/main.js')))
 
 app.get('/video', function(req, res) {
   const path = 'assets/sample.mp4'

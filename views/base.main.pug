@@ -10,7 +10,7 @@ block overbar
       div(class="collapse navbar-collapse",id="overbar")
         ul(class="navbar-nav mr-auto")
           li(class="nav-item active")
-            a(class="nav-link text-white",href="/project") Projects
+            a(class="nav-link text-white",href="/app") Apps
           li(class="nav-item active")
             a(class="nav-link text-white",href="/about") About
           if auth.scope>0
@@ -30,7 +30,7 @@ block overbar
         ul(class="nav navbar-nav navbar-right")
           li(class="dropdown")
             if auth.scope<0
-              a(class="nav-link",role="button",href="/auth") Login
+              a(class="nav-link text-white",role="button",href="/auth") Login
             else
               a(href="#",class="nav-link dropdown-toggle text-white",data-toggle="dropdown",role="button",aria-haspopup="true",aria-expanded="false") Account
               span(class="caret")

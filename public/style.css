@@ -9,3 +9,6 @@
   left: 50%;
   transform: translate(-50%,0);
 }
+.selection .list-group-item:hover{
+  background-color: #03e8fc;
+}
