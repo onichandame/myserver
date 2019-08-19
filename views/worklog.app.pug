@@ -31,14 +31,14 @@ block main
                 h4(class="modal-title text-left") New Task
                 button(type="button",class="close",data-dismiss="modal") &times;
               div(class="modal-body col")
-                select(class="form-control row ml-1")
+                select(class="form-control row ml-1",id="importance")
                   option(value="0") primary
                   option(value="1") auxiliary
                   option(value="2") part-time
                 div(class="input-group mb-3 ml-1")
                   input(type="text",class="form-control",placeholder="task descriptioin",id="description")
                   div(class="input-group-append")
-                    button(class="btn btn-outline-primary",type="button",onclick="create()",data-dismiss="modal") Create Task
+                    button(class="btn btn-outline-primary",type="button",onClick="create()",data-dismiss="modal") Create Task
       div(class="col")
         ul(class="list-group",id="diary")
           li(class="list-group-item") log1
@@ -46,7 +46,7 @@ block main
         div(class="input-group mb-3")
           input(type="text",class="form-control",placeholder="comment...",aria-label="comment",id="inp")
           div(class="input-group-append")
-            button(class="btn btn-outline-primary",type="button",onclick="submit()") Finish
+            button(class="btn btn-outline-primary",type="button",onClick="submit()") Finish
       div(class="col")
         div(class="status")
         div(class="row")

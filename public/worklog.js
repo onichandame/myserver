@@ -1,9 +1,9 @@
 var meta={task:{dirty:false,
                 aboutToUpdate:true,
-                url:'tasklist'},
+                url:window.location+'/tasklist'},
           log:{dirty:false,
                aboutToUpdate:true,
-               url:'diary'}}
+               url:window.location+'/diary'}}
 
 $(document).ready(function (){
   $(".selection .list-group-item").click(function(){
@@ -95,6 +95,12 @@ function create(){
            description:description}
   xhr.send(JSON.stringify(tar))
   xhr.onload=function(){
+    if(xhr.status!=200)
+      xhr.onerror()
+    else
     syncTaskList()
+  }
+  xhr.onerror=function(){
+    alert("failed to create! "+xhr.status)
   }
 }
