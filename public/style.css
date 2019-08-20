@@ -12,3 +12,62 @@
 .selection .list-group-item:not(.active):hover{
   background-color: #03e8fc;
 }
+#date{
+  font-family: 'BebasNeueRegular', Arial, Helvetica, sans-serif;
+  font-size: 24px;
+  text-align: center;
+  text-shadow: 0 0 5px #00c6ff;
+}
+.clock+ul{
+  width: 800px;
+  margin: 0 auto;
+  padding: 0px;
+  list-style: none;
+  text-align: center;
+}
+.clock li{
+  display: inline;
+  font-size: 30px;
+  text-align: center;
+  font-family: 'BebasNeueRegular', Arial, Helvetica, sans-serif;
+  text-shadow: 0 0 5px #00c6ff;
+}
+#point{
+  position: relative;
+  -moz-animation: mymove 1s ease infinite;
+  -webkit-animation: mymove 1s ease infinite;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+@-webkit-keyframes mymove {
+    0% {opacity: 1.0;
+    text-shadow: 0 0 20px #00c6ff;
+}
+
+50% {
+    opacity: 0;
+    text-shadow: none;
+}
+
+100% {
+    opacity: 1.0;
+    text-shadow: 0 0 20px #00c6ff;
+}
+}
+
+@-moz-keyframes mymove {
+    0% {
+        opacity: 1.0;
+        text-shadow: 0 0 20px #00c6ff;
+    }
+
+    50% {
+        opacity: 0;
+        text-shadow: none;
+    }
+
+    100% {
+        opacity: 1.0;
+        text-shadow: 0 0 20px #00c6ff;
+    };
+}
