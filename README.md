@@ -1,8 +1,6 @@
-This is a basic sample of how to do video streaming using Node.js and HTML5
+This is a a website hosting personal homepage and some web applications. This repo is mainly for my study of web development.
 
-# Install
+# Author
+Xiao Zhang
 
-- git clone
-- npm install
-- npm start
-- open browser in `localhost:80`
+# Archetecture
