@@ -3,7 +3,11 @@ This is a a website hosting personal homepage and some web applications. This re
 # Author
 Xiao Zhang
 
-# Archetecture
-The UI is designed as follows:
+# Architecture
+The main UI is designed as follows:
 
 ![ui](public/architecture.png)
+
+The **Add Task** dialog is designed:
+
+![newtask](public/newTask.png)
