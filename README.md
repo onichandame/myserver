@@ -28,10 +28,13 @@ In the **Edit** dialog all the information can be modified.
 One of the actions is chosen when the task is finished.
 
 * Solved: mark the task as completed and prompted to start a new task. If the checkbox is checked, all the ui will be greyed out except the tasklist after the dialog is closed, until a task is selected.
+
   ![solved](public/solved.png)
 * Solved but new issue: this task is solved but some new issues appeared during the process.
+
   ![newbug](public/newbug.png)
 * Give up: this task is abandoned for some reason.
+
   ![giveup](public/giveup.png)
 
 The **Delete**'s confirmation dialog is designed as:
