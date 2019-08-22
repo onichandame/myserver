@@ -9,7 +9,8 @@ This app is designed to track all the miscellaneous information during workdays.
 At the beginning of the workday, the user is prompted to select the scene of the day.
 
 ![begin](public/begin.png)
-The main UI is designed as follows:
+
+If either **in office** or **on business trip** is selected, the main UI shows up. In the meantime the user is prompted to select a task to begin with. The main UI is designed as follows:
 
 ![ui](public/architecture.png)
 
