@@ -12,13 +12,21 @@ The left panel is for my personal information. The static content include an ava
 
 The main part of the page is dyed dark. Below the welcome message is the showcase part. Each item is grouped into 1 card. 2 cards are aligned in 1 row. The background of the cards should also be black. The main part can be scrolled up and down as a whole.
 
-Above all is navbar. The homepage is displayed above. The about page displays contact info and legal announcement of this website. The App tab should have its own page displaying all the apps hosted on this site. On the far right of the navbar is the built-in auth service. The auth info is used across the entire site.
+Above all is navbar. The homepage is displayed above. The about page displays contact info and legal announcement of this website. The App tab should have its own page displaying all the apps hosted on this site.
 
 ![about](public/about.png)
 
 ![app](public/app.png)
 
+On the far right of the navbar is the built-in auth service. The auth info is used across the entire site. If not authorised, it will display login button without dropdown. The profile page is for user account settings.
+
+![profile](public/profile.png)
+
+The logout button logs out the current user and returns the main page.
+
 # Apps
+
+This site is not only designed for showcasing myself, it is also made to facilitate my work by hosting web apps.
 
 ## Auth
 /auth
@@ -34,16 +42,38 @@ For user login, the UI is:
 
 For user registration, the UI is:
 
-![usergs](public/usergs.png)
+![usergs](public/userrgs.png)
 
 For app registration:
 
 ![apprgs](public/apprgs.png)
 
-The basic design of the website contains 3 levels of permission. guest, user and pal. guest only has access to the public pages like about, resume and demo pages of the apps. user has additional access to apps and some chosen resources from storage. pal can access any resource on the site. Therefore guests don't need to be authorised. users are open for registration. pal is only granted to people with invitation token.
+The basic design of the website contains 3 levels of permission. guest, user and pal. guest only has access to the public pages like about, resume and demo pages of the apps. user has additional access to apps. pal is able to invite other pals if more than 1/2 of the existing pals do not oppose. Therefore guests don't need to be authorised. users are open for registration. pal is only granted to people with invitation token.
+
+The registration of user is completed on an email link. The app registration requires permission from the admin team(pal).
+
+### Authentication && Authorisation
+The user need to be authenticated to be able to use the apps. The auth service is a core service accessed from /oauth.
+
+#### Registration
+The apps needs to register with the auth service at installation to use the auth service. The app will provide a name, a mainpage url and a redirect url in exchange for a unique *aid* together with a unique secret string.
+
+#### Authorisation
+
+##### For the record
+When a user browses the app without a valid authentication, a demo page is displayed. If the user clicks **Login**, he/she will be redirected to the login page for authorisation. The url is /oauth/authorise?response_type=code&client_id=aid&redirect_uri=callback&scope=read.
+The user is then prompted to enter username and password to authorise the service. Once authorised, a code is generated indicating that the user is authorised to access the account. the redirect url is callback?code=code
+Then the service receives the code and requests for an access token from the url /oauth/token?client_id=aid&client_secret=secret&grant_type=authorization_code&code=code&redirect_uri=callback
+If the auth service verifies the code, a token in the form {access_token:token,token_type:bearer,expires_in:int,refresh_token:rtoken,scope:read,uid=int,info={name:string,email:string}} is generated and sent as the response to the service.
+
+##### Default
+When a user browses the app without a valid authentication, a demo page is displayed. If the user clicks **Login**, he/she will be redirected to the login page for authorisation. The url is /oauth/authorise?response_type=token&client_id=aid&redirect_uri=callback&scope=read.
+The user is then prompted to enter username and password to authorise the service. Once authorised, a token is generated indicating that the user is authorised to access the account. The redirect url is redirect/callback#token=token.
+The service then returns a script that extracts the token from the full url and receives it.
+When the app receives the token, it uses the uid in the token as the owner field in the database, info.name as the username and email as the address to send notification mail.
 
 ### Data Structure
-Based on the design, the service needs to have 3 unrelated SQL databases:
+Based on the design, the service needs to have 2 unrelated SQL databases:
 - user
   - id(INT)
   - name(TEXT)
@@ -51,14 +81,11 @@ Based on the design, the service needs to have 3 unrelated SQL databases:
   - level(INT)
   - email(TEXT)
 - app
+  - id
   - name
   - url
   - callback
   - secret
-- auth
-  - code
-  - created_at
-  - expires_in
 
 ## Worklog
 /app/worklog
@@ -158,20 +185,3 @@ If the user chooses **at home** at the beginning of the day, no tasks will be sh
    
    Last of all, the access point of the data is /app/worklog/data. GET for the retrieval of data, POST for the submission of data. All the request are expected to be made by XmlHttpRequest. All the data transferred are enclosed in JSON string in the html body.
 
-### Authentication && Authorisation
-The user need to be authenticated to be able to use the service. The auth service is a core service accessed from /oauth.
-
-#### Registration
-The app needs to register with the auth service at installation to use the auth service. The app will provide a name, a mainpage url and a redirect url in exchange for a unique *aid* together with a unique secret string.
-
-#### Authorisation
-<!---
-When a user browses the app withou a valid authentication, a demo page is displayed. If the user clicks **Login**, he/she will be redirected to the login page for authorisation. The url is /oauth/authorise?response_type=code&client_id=aid&redirect_uri=callback&scope=read.
-The user is then prompted to enter username and password to authorise the service. Once authorised, a code is generated indicating that the user is authorised to access the account. the redirect url is callback?code=code
-Then the service receives the code and requests for an access token from the url /oauth/token?client_id=aid&client_secret=secret&grant_type=authorization_code&code=code&redirect_uri=callback
-If the auth service verifies the code, a token in the form {access_token:token,token_type:bearer,expires_in:int,refresh_token:rtoken,scope:read,uid=int,info={name:string,email:string}} is generated and sent as the response to the service.
---->
-When a user browses the app withou a valid authentication, a demo page is displayed. If the user clicks **Login**, he/she will be redirected to the login page for authorisation. The url is /oauth/authorise?response_type=token&client_id=aid&redirect_uri=callback&scope=read.
-The user is then prompted to enter username and password to authorise the service. Once authorised, a token is generated indicating that the user is authorised to access the account. The redirect url is redirect/callback#token=token.
-The service then returns a script that extracts the token from the full url and receives it.
-When the app receives the token, it uses the uid in the token as the owner field in the database, info.name as the username and email as the address to send notification mail.
