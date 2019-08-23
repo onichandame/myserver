@@ -14,6 +14,10 @@ The main part of the page is dyed dark. Below the welcome message is the showcas
 
 Above all is navbar. The homepage is displayed above. The about page displays contact info and legal announcement of this website. The App tab should have its own page displaying all the apps hosted on this site. On the far right of the navbar is the built-in auth service. The auth info is used across the entire site.
 
+![about](public/about.png)
+
+![app](public/app.png)
+
 # Apps
 
 ## Auth
