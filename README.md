@@ -1,7 +1,18 @@
-This is a a website hosting personal homepage and some web applications. This repo is mainly for my study of web development.
+This is a a website hosting personal homepage and some web applications. This site is mainly for learning purpose
 
 # Author
 Xiao Zhang
+
+# Design
+The main function of this website is my personal homepage. For this purpose, the main UI is as follows:
+
+![home](public/home.png)
+
+The left panel is for my personal information. The static content include an avatar, name and title. These are grouped on the top half. The dynamic contents are my experiences. Each experience is grouped in 1 block. On collapse, only the title and the main objective are shown. On expansion, the achievements are shown. The dynamic part can scroll up and down.
+
+The main part of the page is dyed dark. Below the welcome message is the showcase part. Each item is grouped into 1 card. 2 cards are aligned in 1 row. The background of the cards should also be black. The main part can be scrolled up and down as a whole.
+
+Above all is navbar. The homepage is displayed above. The about page displays contact info and legal announcement of this website. The App tab should have its own page displaying all the apps hosted on this site. On the far right of the navbar is the built-in auth service. The auth info is used across the entire site.
 
 # Apps
 
