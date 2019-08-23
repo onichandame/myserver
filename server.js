@@ -19,7 +19,7 @@ app.use(require(path.resolve(__dirname,"routes/error.js")))
 const auth=require(path.resolve(__dirname,'routes/auth.js'))
 
 app.get('/',  (req, res)=>{
-  rd(req,res,'base.main.pug')
+  rd(req,res,'home.main.pug')
 })
 
 app.get('/auth', function(req, res) {

@@ -3,19 +3,19 @@ extends base.pug
 
 block overbar
   header
-    nav(class="navbar navbar-expand-lg navbar-light bg-dark")
-      a(class="navbar-brand text-white",href="/") Home
+    nav(class="navbar navbar-expand-lg x-navbar")
+      a(class="navbar-brand x-navbar",href="/") Home
       button(class="navbar-toggler",type="button",data-toggle="collapse",data-target="#overbar",aria-controls="overbar",aria-expanded="false",aria-label="Show Top-bar")
         span(class="navbar-toggler-icon")
       div(class="collapse navbar-collapse",id="overbar")
         ul(class="navbar-nav mr-auto")
-          li(class="nav-item active")
-            a(class="nav-link text-white",href="/app") Apps
-          li(class="nav-item active")
-            a(class="nav-link text-white",href="/about") About
+          li(class="nav-item")
+            a(class="nav-link x-navbar",href="/app") Apps
+          li(class="nav-item")
+            a(class="nav-link x-navbar",href="/about") About
           if auth.scope>0
             li(class="nav-item dropdown")
-              a(href="#",class="nav-link dropdown-toggle text-white",data-toggle="dropdown",aria-haspopup="true",aria-expanded="false") Gallery
+              a(href="#",class="nav-link dropdown-toggle x-navbar",data-toggle="dropdown",aria-haspopup="true",aria-expanded="false") Gallery
                 span(class="caret")
               ul(class="dropdown-menu bg-dark")
                 li
@@ -30,13 +30,13 @@ block overbar
         ul(class="nav navbar-nav navbar-right")
           li(class="dropdown")
             if auth.scope<0
-              a(class="nav-link text-white",role="button",href="/auth") Login
+              a(class="nav-link x-navbar",role="button",href="/auth") Login
             else
-              a(href="#",class="nav-link dropdown-toggle text-white",data-toggle="dropdown",role="button",aria-haspopup="true",aria-expanded="false") Account
+              a(href="#",class="nav-link dropdown-toggle x-navbar",data-toggle="dropdown",role="button",aria-haspopup="true",aria-expanded="false") Account
               span(class="caret")
             ul(class="dropdown-menu bg-dark")
               li
-                a(class="nav-link text-white",href="/profile") Profile
+                a(class="nav-link x-navbar",href="/profile") Profile
               li(role="separator",class="divider")
               li
-                a(class="nav-link text-white",href="/logout") Log out
+                a(class="nav-link x-navbar",href="/logout") Log out

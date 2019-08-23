@@ -1,3 +1,21 @@
+.x-avatar{
+  vertical-align:middle;
+  height:5rem;
+  width:5rem;
+  border-radius:50%;
+}
+.x-background{
+  background-color:#000000;
+}
+.navbar.x-navbar{
+  background-color:#222222;
+}
+a.x-navbar{
+  color:#999999;
+}
+a.x-navbar:hover{
+  color:#ffffff;
+}
 .img-profile{
   position: relative;
   text-align: center;
