@@ -16,12 +16,14 @@ app.use(bodyParser.urlencoded({extended: false}))
 app.use(cookieParser())
 
 app.use(require(path.resolve(__dirname,"routes/error.js")))
+let auth=require(path.resolve(__dirname,'utility/auth.js'))
 
-app.get('/',  (req, res)=>{
+app.get('/',  auth, (req, res)=>{
+  if
   rd(req,res,'home.main.pug')
 })
 
-app.all('/oauth', require(path.resolve(__dirname,'app/auth.js')))
+app.all('/oauth', require(path.resolve(__dirname,'app/auth.js').route))
 
 app.get('/register',(req,res)=>{
   res.render('register.auth.pug')

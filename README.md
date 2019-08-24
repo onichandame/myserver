@@ -65,6 +65,9 @@ When a user browses the app without a valid authentication, a demo page is displ
 The user is then prompted to enter username and password to authorise the service. Once authorised, a code is generated indicating that the user is authorised to access the account. the redirect url is callback?code=code
 Then the service receives the code and requests for an access token from the url /oauth/token?client_id=aid&client_secret=secret&grant_type=authorization_code&code=code&redirect_uri=callback
 If the auth service verifies the code, a token in the form {access_token:token,token_type:bearer,expires_in:int,refresh_token:rtoken,scope:read,uid=int,info={name:string,email:string}} is generated and sent as the response to the service.
+Both the authorisation code and the access token are self-contained tokens.
+- code: {aid:aid,created_at:datetime,expires_in:datetime,uid:uid}
+- token: {uid:uid,iss:url,cid:aid,iat:datetime,exp:datetime}
 
 ##### Default
 When a user browses the app without a valid authentication, a demo page is displayed. If the user clicks **Login**, he/she will be redirected to the login page for authorisation. The url is /oauth/authorise?response_type=token&client_id=aid&redirect_uri=callback&scope=read.
