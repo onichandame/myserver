@@ -1,4 +1,6 @@
-module.exports=function(req,res){
+module.exports.decode=function(token){
+}
+module.exports.route=function(req,res){
   if(req.method=='GET'){
   const end=req.path
     if(end=='/authorise'){
