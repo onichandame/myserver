@@ -1,7 +1,7 @@
 {
-  "name": "video-stream-sample",
+  "name": "personalwebsite",
   "version": "1.0.0",
-  "description": "Streaming video example",
+  "description": "My personal website",
   "main": "server.js",
   "engines": {
     "node": ">=6.2.0"
@@ -9,7 +9,7 @@
   "scripts": {
     "start": "nodemon server.js"
   },
-  "author": "daspinola",
+  "author": "xiao",
   "license": "MIT",
   "dependencies": {
     "aes256": "^1.0.4",

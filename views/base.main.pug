@@ -28,7 +28,7 @@ block overbar
                   a(class="nav-link text-white",href="/videos") Videos
         div(class="dropdown-divider")
         ul(class="nav navbar-nav navbar-right")
-          li(class="dropdown")
+          li(class="dropdown",id="user")
             if auth.scope<0
               a(class="nav-link x-navbar",role="button",href="/auth") Login
             else
@@ -40,3 +40,4 @@ block overbar
               li(role="separator",class="divider")
               li
                 a(class="nav-link x-navbar",href="/logout") Log out
+  script(src="/main-navbar.js")

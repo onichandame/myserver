@@ -16,17 +16,12 @@ app.use(bodyParser.urlencoded({extended: false}))
 app.use(cookieParser())
 
 app.use(require(path.resolve(__dirname,"routes/error.js")))
-const auth=require(path.resolve(__dirname,'routes/auth.js'))
 
 app.get('/',  (req, res)=>{
   rd(req,res,'home.main.pug')
 })
 
-app.get('/auth', function(req, res) {
-  rd(req,res,'login.auth.pug')
-})
-
-app.post('/auth',auth.authenticate,auth.authorise,auth.validated)
+app.all('/oauth', require(path.resolve(__dirname,'app/auth.js')))
 
 app.get('/register',(req,res)=>{
   res.render('register.auth.pug')

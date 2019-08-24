@@ -1,3 +1,18 @@
+module.exports=function(req,res){
+  if(req.method=='GET'){
+  const end=req.path
+    if(end=='/authorise'){
+      let db=require(path.resolve(__dirname,''))
+      const qry=req.query
+      validate_app(req,res,(req,res)=>{
+      })
+      if(qry.response_type=='code'){
+      }else if(qry.response_type=='token'){
+      }
+    }
+  }else if(req.method=='POST'){
+  }
+}
 module.exports.authenticate=function(req,res,next){
   const path=require('path')
 
