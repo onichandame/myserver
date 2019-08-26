@@ -24,7 +24,7 @@ On the far right of the navbar is the built-in auth service. The auth info is us
 
 The logout button logs out the current user and returns the main page.
 
-# Apps
+# Core Services
 
 This site is not only designed for showcasing myself, it is also made to facilitate my work by hosting web apps.
 
@@ -69,11 +69,15 @@ Both the authorisation code and the access token are self-contained tokens.
 - code: {aid:aid,created_at:datetime,expires_in:datetime,uid:uid}
 - token: {uid:uid,iss:url,cid:aid,iat:datetime,exp:datetime}
 
-##### Default
+![oauth](public/oauth.png)
+
+##### Default routine
 When a user browses the app without a valid authentication, a demo page is displayed. If the user clicks **Login**, he/she will be redirected to the login page for authorisation. The url is /oauth/authorise?response_type=token&client_id=aid&redirect_uri=callback&scope=read.
 The user is then prompted to enter username and password to authorise the service. Once authorised, a token is generated indicating that the user is authorised to access the account. The redirect url is redirect/callback#token=token.
 The service then returns a script that extracts the token from the full url and receives it.
 When the app receives the token, it uses the uid in the token as the owner field in the database, info.name as the username and email as the address to send notification mail.
+
+![implicit](public/implicit.png)
 
 ### Data Structure
 Based on the design, the service needs to have 2 unrelated SQL databases:
@@ -89,6 +93,8 @@ Based on the design, the service needs to have 2 unrelated SQL databases:
   - url
   - callback
   - secret
+
+# Apps
 
 ## Worklog
 /app/worklog
