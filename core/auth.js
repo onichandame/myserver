@@ -40,6 +40,7 @@ module.exports=function(req,res){
                 res.status(500)
                 res.send()
               }else{
+                res.render('authorise.auth.pug')
               }
             })
         })

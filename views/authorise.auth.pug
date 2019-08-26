@@ -1,0 +1,9 @@
+extends base.auth.pug 
+
+block main
+  div(class="col-xs-3")
+  form(class="col-xs-6",id="login")
+    div(class="form-group")
+      label(for="username") Who are you
+      input(type="text",class="form-control",name="username",placeholder="my name")
+  div(class="col-xs-3")
