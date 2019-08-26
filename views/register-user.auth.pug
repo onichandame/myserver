@@ -1,6 +1,6 @@
 extends base.auth.pug 
 
-block main
+block main 
   div(class="col-xs-3")
   form(class="col-xs-6",id="form-auth")
     div(class="form-group")
@@ -9,7 +9,12 @@ block main
     div(class="form-group col")
       label(for="password") What is your code
       input(type="password",class="form-control",name="password",placeholder="my passphrase")
-    button(type="submit",class="btn btn-primary col center-block") Login
-    a(href='/oauth/register-user') Register
+    div(class="form-group col")
+      label(for="password") Confirm you password
+      input(type="password",class="form-control",placeholder="confirm passphrase")
+    div(class="form-group col")
+      label(for="password") What is your email
+      input(type="text",class="form-control",name="email",placeholder="xxx@xxx.xxx")
+    button(type="submit",class="btn btn-primary col center-block") Sign up
   div(class="col-xs-3")
   script(src="/form.auth.js")

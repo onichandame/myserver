@@ -48,6 +48,8 @@ module.exports=function(req,res){
         res.status(401)
         res.send()
       }
+    }else if(end=='/register-user'){
+      res.render('register-user.auth.pug')
     }else{
       decodeToken(req.cookies.token,(err,token)={
         if(err)
@@ -57,6 +59,9 @@ module.exports=function(req,res){
       })
     }
   }else if(req.method=='POST'){
+    const end=req.path
+    if(end=='/authorise'){
+    }
   }
 }
 module.exports.authenticate=function(req,res,next){
