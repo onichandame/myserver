@@ -23,7 +23,7 @@ app.get('/',  auth, (req, res)=>{
   rd(req,res,'home.main.pug')
 })
 
-app.all('/oauth', require(path.resolve(__dirname,'app/auth.js').route))
+app.all('/oauth', require(path.resolve(__dirname,'core/auth.js').route))
 
 app.get('/register',(req,res)=>{
   res.render('register.auth.pug')

@@ -29,7 +29,7 @@ The logout button logs out the current user and returns the main page.
 This site is not only designed for showcasing myself, it is also made to facilitate my work by hosting web apps.
 
 ## Auth
-/auth
+/oauth
 
 ### UI
 The auth service stores the user information and provides access to it on requests. Therefore it needs to allow applications to register and users to authorise. The workflow follows:

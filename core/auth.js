@@ -1,6 +1,4 @@
-module.exports.decode=function(token){
-}
-module.exports.route=function(req,res){
+module.exports=function(req,res){
   if(req.method=='GET'){
   const end=req.path
     if(end=='/authorise'){
@@ -10,7 +8,52 @@ module.exports.route=function(req,res){
       })
       if(qry.response_type=='code'){
       }else if(qry.response_type=='token'){
+        const cid=qry.client_id
+        const uri=qry.redirect_uri
+        const scope=qry.scope
+        const db_param=require(path.resolve(__dirname,"db.js"))
+        const sqlite3=require('sqlite3').verbose()
+        let db=new sqlite3.Database(db_param.app.dbname,sqlite3.OPEN_READWRITE|sqlite3.OPEN_CREATE,(err)={
+          if (err){
+            res.status(500)
+            res.send()
+          }
+        })
+        db.serialize(function(){
+          var sql='CREATE TABLE IF NOT EXISTS '
+          sql += db_param.user.tblname 
+          sql += ' ('
+          for(const [key,value] of Object.entries(db_param.user.col)){
+            sql += key 
+            sql += ' '
+            sql += value 
+            sql +=','
+          }
+          sql=sql.slice(0,-1)
+          sql += ')'
+          db.run(sql,(err)=>{
+            if(err)
+              next(err)
+          })
+            .each('SELECT secret,callback_uri as uri from '+db_param.app.tblname+' where rowid='+cid,(err,row)={
+              if(err){
+                res.status(500)
+                res.send()
+              }else{
+              }
+            })
+        })
+      }else{
+        res.status(401)
+        res.send()
       }
+    }else{
+      decodeToken(req.cookies.token,(err,token)={
+        if(err)
+          res.send()
+        else
+          res.json(token)
+      })
     }
   }else if(req.method=='POST'){
   }
@@ -114,30 +157,22 @@ module.exports.validated=function(req,res,next){
 
 let token_key='jGtk6BQRKCtTBTwvBgIPSYDv8XMeahRj'
 
-function generateToken(obj){
-  var aes256=require('aes256')
-  if(typeof obj==='string')
-    return aes256.encrypt(token_key,obj)
-  else
-    return aes256.encrypt(token_key,JSON.stringify(obj))
+function generateToken(token){
+  var jwt=require('jsonwebtoken')
+  jwt.verify(token,token_key,{algorithms:'HS256'},(err,result)={
+    if(err)
+      callback(err)
+    else 
+      callback(err,result)
+  })
 }
 
-module.exports.decodeToken=function(obj){
-  var aes256=require('aes256')
-  let token={}
-  try{
-    token=JSON.parse(aes256.decrypt(token_key,obj))
-    if(!token)
-      throw 'invalide token:'
-    var time=new Date(token.created_at)
-    time.setSeconds(time.getSeconds()+token.expires_in)
-    if(time<new Date())
-      throw 'expired token'
-    if(!token.hasOwnProperty('scope'))
-      throw 'invalide token(no scope)'
-  }catch(e){
-    token.info={username:'guest'}
-    token.scope=-1
-  }
-  return token
+module.exports.decodeToken=function(token,callback){
+  var jwt=require('jsonwebtoken')
+  jwt.verify(token,token_key,{algorithms:'HS256'},(err,result)={
+    if(err)
+      callback(err)
+    else 
+      callback(err,result)
+  })
 }
