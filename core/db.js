@@ -4,7 +4,6 @@ module.exports.user={tblname : "TableUser",
                             password : "TEXT NOT NULL",
                             active : "INT NOT NULL",
                             email : "TEXT NOT NULL",
-                            level : "INT NOT NULL",
                             creation_date : "TEXT NOT NULL"}
                     }
 module.exports.app={tblname : "TableApp",

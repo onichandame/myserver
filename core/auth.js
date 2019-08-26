@@ -1,4 +1,5 @@
 module.exports=function(req,res){
+  const path=require('path')
   if(req.method=='GET'){
   const end=req.path
     if(end=='/authorise'){
@@ -61,6 +62,38 @@ module.exports=function(req,res){
   }else if(req.method=='POST'){
     const end=req.path
     if(end=='/authorise'){
+      const username=req.body.username
+      if(username){
+        const db_param=require(path.resolve(__dirname,"db.js"))
+        const sqlite3=require('sqlite3').verbose()
+        var token={info:{username:username}}
+        token.expires_in=3600
+        token.token_type="bearer"
+        token.created_at=new Date().toString()
+
+        let db=new sqlite3.Database(db_param.user.dbname,sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE,(err)=>{
+          if (err)
+            next(err)
+        })
+        db.serialize(function(){
+          db.all('SELECT email,active FROM '+db_param.user.tblname+' WHERE username=\''+username+'\'',(err,rows)=>{
+            if(err)
+              next(err)
+            if(rows.length!=1)
+              next(err)
+            const row=rows[0]
+            token.scope=row.level
+            token.info.email=row.email
+            token.hash=generateToken(token)
+            res.set('Authorisation',JSON.stringify(token))
+
+            next()
+          })
+        })
+      }else{
+        res.status(400)
+        res.send()
+      }
     }
   }
 }
