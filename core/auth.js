@@ -1,10 +1,10 @@
-module.exports=function(req,res){
+module.exports=function(req,res,next){
   const path=require('path')
-  if(req.method=='GET'){
   const end=req.path
+  const qry=req.query
+  if(req.method=='GET'){
     if(end=='/authorise'){
       let db=require(path.resolve(__dirname,''))
-      const qry=req.query
       validate_app(req,res,(req,res)=>{
       })
       if(qry.response_type=='code'){
@@ -63,32 +63,72 @@ module.exports=function(req,res){
     const end=req.path
     if(end=='/authorise'){
       const username=req.body.username
-      if(username){
-        const db_param=require(path.resolve(__dirname,"db.js"))
-        const sqlite3=require('sqlite3').verbose()
-        var token={info:{username:username}}
-        token.expires_in=3600
-        token.token_type="bearer"
-        token.created_at=new Date().toString()
+      // implicit issurance
+      if(qry.response_type=='token'){
+        if(username){
+          const db_param=require(path.resolve(__dirname,"db.js"))
+          const sqlite3=require('sqlite3').verbose()
+          var token={access_token:{username:username}}
+          token.expires_in=3600
+          token.token_type="bearer"
+          token.scope=qry.scope
+          token.created_at=new Date().toString()
 
-        let db=new sqlite3.Database(db_param.user.dbname,sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE,(err)=>{
-          if (err)
-            next(err)
-        })
-        db.serialize(function(){
-          db.all('SELECT email,active FROM '+db_param.user.tblname+' WHERE username=\''+username+'\'',(err,rows)=>{
-            if(err)
+          let db=new sqlite3.Database(db_param.user.dbname,sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE,(err)=>{
+            if (err)
               next(err)
-            if(rows.length!=1)
-              next(err)
-            const row=rows[0]
-            token.scope=row.level
-            token.info.email=row.email
-            token.hash=generateToken(token)
-            res.set('Authorisation',JSON.stringify(token))
-
-            next()
           })
+          db.serialize(function(){
+            db.all('SELECT rowid,email,active FROM '+db_param.user.tblname+' WHERE username=\''+username+'\'',(err,rows)=>{
+              if(err||rows.length!=1){
+                res.status(400)
+                res.send()
+              }
+              const row=rows[0]
+              token.uid=row.uid
+              token.access_token.email=row.email
+              generateToken(token,(err,result)=>{
+                if(err){
+                  res.status(500)
+                  res.send()
+                }else{
+                  res.status(200)
+                  let adb= new sqlite3.Database(db_param.app.dbname,sqlite3.OPEN_READWRITE |sqlite3.OPEN_CREATE,(err)=>{
+                    if(err)
+                      next(err)
+                  })
+                  adb.serialize(function(){
+                    adb.all('SELECT redirect_uri FROM '+db_param.app.tblname+' WHERE rowid='+qry.client_id,(err,rows)=>{
+                      if(err||rows.length!=1){
+                        res.status(400)
+                        res.send()
+                      }else{
+                        row=rows[0]
+                        res.redirect(row.redirect_uri+'/'+qry.redirect_uri+'#'+result)
+                      }
+                    })
+                    .close()
+                  })
+                }
+              })
+            })
+            .close()
+          })
+        }else{
+          res.status(400)
+          res.send()
+        }
+      }
+    }else if(end=='/request'){
+      if(req.body.token){
+        res.status(200)
+        decodeToken(token.access_token,(err,result)=>{
+          if(err){
+            res.status(400)
+            res.send()
+          }else{
+            res.json(result)
+          }
         })
       }else{
         res.status(400)
@@ -196,17 +236,19 @@ module.exports.validated=function(req,res,next){
 
 let token_key='jGtk6BQRKCtTBTwvBgIPSYDv8XMeahRj'
 
-function generateToken(token){
+function generateToken(token,callback){
   var jwt=require('jsonwebtoken')
-  jwt.verify(token,token_key,{algorithms:'HS256'},(err,result)={
-    if(err)
+  jwt.sign(token.access_token,token_key,{algorithms:'HS256'},(err,result)={
+    if(err){
       callback(err)
-    else 
-      callback(err,result)
+    }else{
+      token.access_token=result
+      callback(err,token)
+    }
   })
 }
 
-module.exports.decodeToken=function(token,callback){
+function decodeToken(token,callback){
   var jwt=require('jsonwebtoken')
   jwt.verify(token,token_key,{algorithms:'HS256'},(err,result)={
     if(err)

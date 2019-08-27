@@ -11,10 +11,10 @@ block main
       input(type="password",class="form-control",name="password",placeholder="my passphrase")
     div(class="form-group col")
       label(for="password") Confirm you password
-      input(type="password",class="form-control",placeholder="confirm passphrase")
+      input(type="password",class="form-control",name="confirm",placeholder="confirm passphrase")
     div(class="form-group col")
       label(for="password") What is your email
       input(type="text",class="form-control",name="email",placeholder="xxx@xxx.xxx")
-    button(type="submit",class="btn btn-primary col center-block") Sign up
+    button(id="submit",type="submit",class="btn btn-primary col center-block") Sign up
   div(class="col-xs-3")
   script(src="/form.auth.js")
