@@ -17,11 +17,9 @@ app.use(cookieParser())
 app.use(require(path.resolve(__dirname,"routes/error.js")))
 let auth=require(path.resolve(__dirname,'utility/auth.js'))
 
-app.get('/',  auth, (req, res)=>{
-  res.render(req,res,'core/main/main.pug')
-})
+app.all('/',  auth, require(path.resolve(__dirname,'core/main.js')))
 
-app.all('/oauth', require(path.resolve(__dirname,'core/auth.js').route))
+app.all('/oauth', require(path.resolve(__dirname,'core/auth.js')))
 
 app.get('/video', function(req, res) {
   const path = 'assets/sample.mp4'
