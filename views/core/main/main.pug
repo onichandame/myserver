@@ -8,7 +8,7 @@ block overbar
       button(class="navbar-toggler",type="button",data-toggle="collapse",data-target="#overbar",aria-controls="overbar",aria-expanded="false",aria-label="Show Top-bar")
         span(class="navbar-toggler-icon")
       div(class="collapse navbar-collapse",id="overbar")
-        ul(class="navbar-nav mr-auto")
+        ul(class="navbar-nav mr-auto",id="nav")
           li(class="nav-item")
             a(class="nav-link x-navbar",href="/app") Apps
           li(class="nav-item")
@@ -41,3 +41,5 @@ block overbar
               li
                 a(class="nav-link x-navbar",href="/logout") Log out
   script(src="/main-navbar.js")
+block script
+  script(src="/core/main/main.js")

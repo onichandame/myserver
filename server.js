@@ -3,7 +3,6 @@ const bodyParser=require('body-parser')
 const fs = require('fs')
 const path = require('path')
 const app = express()
-const rd=require(path.resolve(__dirname,'utility/render.js'))
 const port = 8080
 const cookieParser=require('cookie-parser')
 
@@ -19,24 +18,10 @@ app.use(require(path.resolve(__dirname,"routes/error.js")))
 let auth=require(path.resolve(__dirname,'utility/auth.js'))
 
 app.get('/',  auth, (req, res)=>{
-  if
-  rd(req,res,'home.main.pug')
+  res.render(req,res,'core/main/main.pug')
 })
 
 app.all('/oauth', require(path.resolve(__dirname,'core/auth.js').route))
-
-app.get('/register',(req,res)=>{
-  res.render('register.auth.pug')
-})
-app.post('/register',require(path.join(__dirname,'routes/register.js')))
-
-app.get('/about',(req,res)=>{
-  rd(req,res,'about.main.pug')
-})
-
-app.get(/\/app/,require(path.resolve(__dirname,'app/main.js')))
-
-app.post(/\/app/,require(path.resolve(__dirname,'app/main.js')))
 
 app.get('/video', function(req, res) {
   const path = 'assets/sample.mp4'

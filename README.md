@@ -6,7 +6,7 @@ Xiao Zhang
 # Design
 The main function of this website is my personal homepage. For this purpose, the main UI is as follows:
 
-![home](public/home.png)
+![home](public/readme/home.png)
 
 The left panel is for my personal information. The static content include an avatar, name and title. These are grouped on the top half. The dynamic contents are my experiences. Each experience is grouped in 1 block. On collapse, only the title and the main objective are shown. On expansion, the achievements are shown. The dynamic part can scroll up and down.
 
@@ -14,13 +14,13 @@ The main part of the page is dyed dark. Below the welcome message is the showcas
 
 Above all is navbar. The homepage is displayed above. The about page displays contact info and legal announcement of this website. The App tab should have its own page displaying all the apps hosted on this site.
 
-![about](public/about.png)
+![about](public/readme/about.png)
 
-![app](public/app.png)
+![app](public/readme/app.png)
 
 On the far right of the navbar is the built-in auth service. The auth info is used across the entire site. If not authorised, it will display login button without dropdown. The profile page is for user account settings.
 
-![profile](public/profile.png)
+![profile](public/readme/profile.png)
 
 The logout button logs out the current user and returns the main page.
 
@@ -38,15 +38,15 @@ The auth service stores the user information and provides access to it on reques
 3. access granted/denied
 For user login, the UI is:
 
-![login](public/login.png)
+![login](public/readme/login.png)
 
 For user registration, the UI is:
 
-![usergs](public/userrgs.png)
+![usergs](public/readme/userrgs.png)
 
 For app registration:
 
-![apprgs](public/apprgs.png)
+![apprgs](public/readme/apprgs.png)
 
 The basic design of the website contains 3 levels of permission. guest, user and pal. guest only has access to the public pages like about, resume and demo pages of the apps. user has additional access to apps. pal is able to invite other pals if more than 1/2 of the existing pals do not oppose. Therefore guests don't need to be authorised. users are open for registration. pal is only granted to people with invitation token.
 
@@ -69,7 +69,7 @@ Both the authorisation code and the access token are self-contained tokens.
 - code: {aid:aid,created_at:datetime,expires_in:datetime,uid:uid}
 - token: {uid:uid,iss:url,cid:aid,iat:datetime,exp:datetime}
 
-![oauth](public/oauth.png)
+![oauth](public/readme/oauth.png)
 
 ##### Default routine
 When a user browses the app without a valid authentication, a demo page is displayed. If the user clicks **Login**, he/she will be redirected to the login page for authorisation. The url is /oauth/authorise?response_type=token&client_id=aid&redirect_uri=callback&scope=read.
@@ -77,7 +77,7 @@ The user is then prompted to enter username and password to authorise the servic
 The service then returns a script that extracts the token from the full url and receives it.
 When the app receives the token, it uses the uid in the token as the owner field in the database, info.name as the username and email as the address to send notification mail.
 
-![implicit](public/implicit.png)
+![implicit](public/readme/implicit.png)
 
 ### Data Structure
 Based on the design, the service needs to have 2 unrelated SQL databases:
@@ -104,53 +104,53 @@ This app is designed to track all the miscellaneous information during workdays.
 
 At the beginning of the workday, the user is prompted to select the scene of the day.
 
-![begin](public/begin.png)
+![begin](public/readme/begin.png)
 
 If either **in office** or **on business trip** is selected, the main UI shows up. In the meantime the user is prompted to select a task to begin with. The main UI is designed as follows:
 
-![ui](public/mainui.png)
+![ui](public/readme/mainui.png)
 
 The **Add Task** dialog is designed:
 
-![newtask](public/newTask.png)
+![newtask](public/readme/newTask.png)
 
 The **Add Child** is similar but with a constraint that the child's importance cannot be higher than that of its parent's.
 
-![child](public/addChild.png)
+![child](public/readme/addChild.png)
 
 In the **Edit** dialog all the information can be modified.
 
-![edit](public/edit.png)
+![edit](public/readme/edit.png)
 
 One of the actions is chosen when the task is finished.
 
 * Solved: mark the task as completed and prompted to start a new task. If the checkbox is checked, all the ui will be greyed out except the tasklist after the dialog is closed, until a task is selected.
 
-  ![solved](public/solved.png)
+  ![solved](public/readme/solved.png)
 * Solved but new issue: this task is solved but some new issues appeared during the process.
 
-  ![newbug](public/newbug.png)
+  ![newbug](public/readme/newbug.png)
 * Give up: this task is abandoned for some reason.
 
-  ![giveup](public/giveup.png)
+  ![giveup](public/readme/giveup.png)
 
 The **Delete**'s confirmation dialog is designed as:
 
-![delete](public/delete.png)
+![delete](public/readme/delete.png)
 
 The **Start meeting** dialog is for recording meeting notes. Once clicked, the meeting dialog pops up. The user is then free to edit participants and agenda items. The items are discrete with no relationship. Each item is brought up by the presenter with a self-explainatory title. The conclusion is made at the end of the current item. When finished, the items will be grouped into 1 record and sent to the server. The log will need to be refreshed accordingly.
 
-![meeting](public/meeting.png)
+![meeting](public/readme/meeting.png)
 
 When the **Submit** button is clicked, the following dialog shows up. If the user chooses **Yes**, All changes made today will be submitted as confirmed with a short conclusive comment. In the server, the logs made today and the changes to the tasks will be committed.
 
-![finish](public/finish.png)
+![finish](public/readme/finish.png)
 
 When the **Break** button is clicked, the current task is paused and the tasklist is greyed out. A log stating the pause is created. The button itself changes to **Resume**.
 
 If the user chooses **at home** at the beginning of the day, no tasks will be shown and the UI is solely for a record of the day.
 
-![athome](public/athome.png)
+![athome](public/readme/athome.png)
 
 ### Data Structure
    There are 2 unrelated databases required in the design: task and log. The task can be stored as an SQL database as it has clear predefined structure whereas the log must be stored as a document per day in a NoSQL database. The design follows:

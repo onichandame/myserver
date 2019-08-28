@@ -41,7 +41,7 @@ module.exports=function(req,res,next){
                 res.status(500)
                 res.send()
               }else{
-                res.render('authorise.auth.pug')
+                res.render('core/auth/authorise.auth.pug')
               }
             })
         })
@@ -50,7 +50,7 @@ module.exports=function(req,res,next){
         res.send()
       }
     }else if(end=='/register-user'){
-      res.render('register-user.auth.pug')
+      res.render('core/auth/register-user.auth.pug')
     }else{
       decodeToken(req.cookies.token,(err,token)={
         if(err)
