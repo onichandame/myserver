@@ -9,7 +9,6 @@ module.exports=function(req,res){
   const request=require('request')
   const sqlite3=require('sqlite3').verbose()
   const db_param=require(path.resolve(__dirname,"db.js"))
-  const request=require('request')
   if(req.method=='GET'){
     if(req.path.includes('request')){
     }else{
@@ -40,7 +39,7 @@ module.exports=function(req,res){
             res.status(401)
             res.send()
           }
-          request.post(meta.req_uri,{token,row.token},(err,httpResponse,body)=>{
+          request.post(meta.req_uri,{token:row.token},(err,httpResponse,body)=>{
             if(err){
               res.status(401)
               res.send()
