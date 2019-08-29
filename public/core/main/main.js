@@ -1,8 +1,6 @@
 var meta={auth_server:'/oauth'}
 meta.request_uri=meta.auth_server+'/request'
 meta.auth_uri=meta.auth_server+'/authorise?response_type=token&client_id=0&redirect_uri&scope=read write'
-meta.aid=1
-meta.secret='68d04e390a2bb294618baf63e5418b880acd59415c02d677a66df09c4f047a5f'
 
 var currentPage=''
 
