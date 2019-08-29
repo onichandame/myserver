@@ -16,6 +16,9 @@ a.x-navbar{
 a.x-navbar:hover{
   color:#ffffff;
 }
+.x-navbar.active{
+  color:#ffffff;
+}
 .img-profile{
   position: relative;
   text-align: center;

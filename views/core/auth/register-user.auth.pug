@@ -1,20 +1,17 @@
 extends form.auth.pug 
 
 block main 
-  div(class="col-xs-3")
-  form(class="col-xs-6",id="form-auth")
+  form(class="col-xs-10 col-sm-8 col=md-6 col-lg-3 mx-auto",id="form-reguser")
     div(class="form-group")
       label(for="username") Who are you
       input(type="text",class="form-control",name="username",placeholder="my name")
-      div(id="username-warning")
     div(class="form-group col")
       label(for="password") What is your code
       input(type="password",class="form-control",name="password",placeholder="my passphrase")
     div(class="form-group col")
-      label(for="password") Confirm you password
+      label(for="confirm") Confirm you password
       input(type="password",class="form-control",name="confirm",placeholder="confirm passphrase")
     div(class="form-group col")
-      label(for="password") What is your email
+      label(for="email") What is your email
       input(type="text",class="form-control",name="email",placeholder="xxx@xxx.xxx")
     button(id="submit",type="submit",class="btn btn-primary col center-block") Sign up
-  div(class="col-xs-3")

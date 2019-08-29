@@ -15,11 +15,10 @@ app.use(bodyParser.urlencoded({extended: false}))
 app.use(cookieParser())
 
 app.use(require(path.resolve(__dirname,"routes/error.js")))
-let auth=require(path.resolve(__dirname,'utility/auth.js'))
 
-app.all('/',  auth, require(path.resolve(__dirname,'core/main.js')))
+app.all('/',  require(path.resolve(__dirname,'core/main.js')))
 
-app.all('/oauth', require(path.resolve(__dirname,'core/auth.js')))
+app.all(/\/oauth\//, require(path.resolve(__dirname,'core/auth.js')))
 
 app.get('/video', function(req, res) {
   const path = 'assets/sample.mp4'
@@ -55,6 +54,6 @@ app.get('/video', function(req, res) {
   }
 })
 
-app.listen(port, function () {
+app.listen(port, function (){
   console.log('Listening on port 8080!')
 })

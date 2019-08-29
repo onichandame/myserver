@@ -1,16 +1,37 @@
 $(document).ready(function(){
-  $("#form-auth").attr('action',window.location.href)
+  $("form").attr('action',window.location.href)
+  $("form").attr('method','POST')
   $('head').append('<link rel="stylesheet" type="text/css" href="/form.css">')
 
   $('input[name=username]').after('<p>*</p>')
   $('input[name=password]').after('<p>*</p>')
   $('input[name=confirm]').after('<p>*</p>')
   $('input[name=email]').after('<p>*</p>')
+  $('input[name=appname]').after('<p>*</p>')
+  $('input[name=url]').after('<p>*</p>')
+  $('input[name=redirect]').after('<p>*</p>')
+  var popper=new Popper($('input[name=appname]'),$('input[name=appname]~p'),{placement:'left'})
+  var popper=new Popper($('input[name=url]'),$('input[name=url]~p'),{placement:'left'})
+  var popper=new Popper($('input[name=redirect]'),$('input[name=redirect]~p'),{placement:'left'})
   var popper=new Popper($('input[name=username]'),$('input[name=username]~p'),{placement:'left'})
   var popper=new Popper($('input[name=password]'),$('input[name=password]~p'),{placement:'left'})
   var popper=new Popper($('input[name=confirm]'),$('input[name=confirm]~p'),{placement:'left'})
   var popper=new Popper($('input[name=email]'),$('input[name=email]~p'),{placement:'left'})
   $('#submit').attr('disabled',true)
+  $('input[name=appname]').change(function(){
+    if($('input[name=appname]').val().length<1){
+      $('#submit').attr('disabled',true)
+      if($('input[name=appname]~p').length<2){
+        $('input[name=appname]').after('<p>At least 1 character</p>')
+        var popper=new Popper($('input[name=appname]'),$('input[name=appname]~p'),{placement:'right'})
+      }
+    }else{
+      if($('input[name=appname]~p').length>1)
+        $('input[name=appname]~p:first').remove()
+      if(validateFields())
+        $('#submit').attr('disabled',false)
+    }
+  })
   $('input[name=username]').change(function(){
     if($('input[name=username]').val().length<7){
       $('#submit').attr('disabled',true)
@@ -76,6 +97,8 @@ function validateFields(){
   if($('input[name=email]').length&&!$('input[name=email]').val().includes('@'))
     return false
   if($('input[name=confirm]').length&&$('input[name=confirm]').val()!=$('input[name=password]').val())
+    return false
+  if($('input[name=appname]').length&&$('input[name=appname]').val().length>0)
     return false
   return true
 }
