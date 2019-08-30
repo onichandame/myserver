@@ -6,12 +6,14 @@ block main
       label(for="username") Who are you
       input(type="text",class="form-control",name="username",placeholder="my name")
     div(class="form-group col")
-      label(for="password") What is your code
+      label(for="password") How do you want to login
       input(type="password",class="form-control",name="password",placeholder="my passphrase")
     div(class="form-group col")
-      label(for="confirm") Confirm you password
+      label(for="confirm") Confirm you code
       input(type="password",class="form-control",name="confirm",placeholder="confirm passphrase")
     div(class="form-group col")
-      label(for="email") What is your email
+      label(for="email") How do you want to be contacted
       input(type="text",class="form-control",name="email",placeholder="xxx@xxx.xxx")
     button(id="submit",type="submit",class="btn btn-primary col center-block") Sign up
+block append script
+  script(src="/core/auth/newuser.js")

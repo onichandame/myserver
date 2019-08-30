@@ -4,6 +4,7 @@ module.exports=function(req,res,next){
   const qry=req.query
   const sqlite3=require('sqlite3').verbose()
   const {SHA3}=require('sha3')
+  const db_param=require(path.resolve(__dirname,"db.js")).auth
   if(req.method=='GET'){
     if(pt.includes('authorise')){
       if(qry.response_type=='code'){
@@ -11,7 +12,6 @@ module.exports=function(req,res,next){
         const cid=qry.client_id
         const uri=qry.redirect_uri
         const scope=qry.scope
-        const db_param=require(path.resolve(__dirname,"db.js"))
         let db=new sqlite3.Database(db_param.app.dbname,sqlite3.OPEN_READWRITE|sqlite3.OPEN_CREATE,(err)={
           if (err){
             res.status(500)
@@ -48,8 +48,8 @@ module.exports=function(req,res,next){
         res.status(401)
         res.send()
       }
-    }else if(pt.includes('register-user')){
-      res.render('core/auth/register-user.auth.pug')
+    }else if(pt.includes('newuser')){
+      res.render('core/auth/newuser.auth.pug')
     }else if(pt.includes('register-app')){
       res.render('core/auth/register-app.auth.pug')
     }else{
@@ -66,7 +66,6 @@ module.exports=function(req,res,next){
       // implicit issurance
       if(qry.response_type=='token'){
         if(username){
-          const db_param=require(path.resolve(__dirname,"db.js"))
           var token={access_token:{username:username}}
           token.expires_in=3600
           token.token_type="bearer"
@@ -133,17 +132,16 @@ module.exports=function(req,res,next){
         res.status(400)
         res.send()
       }
-    }else if(pt.includes('register-user')){
-      const db_param=require(path.resolve(__dirname,"db.js"))
-      let db=new sqlite3.Database(db_param.user.dbname,sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE,(err)=>{
+    }else if(pt.includes('newuser')){
+      let db=new sqlite3.Database(db_param.dbname,sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE,(err)=>{
         if (err)
           next(err)
       })
       db.serialize(function(){
         var sql='CREATE TABLE IF NOT EXISTS '
-        sql += db_param.user.tblname 
+        sql += db_param.tbl.user.name 
         sql += ' ('
-        for(const [key,value] of Object.entries(db_param.user.col)){
+        for(const [key,value] of Object.entries(db_param.tbl.user.col)){
           sql += key 
           sql += ' '
           sql += value 
@@ -155,20 +153,24 @@ module.exports=function(req,res,next){
           if(err)
             next(err)
         })
-        .each('SELECT rowid FROM '+db_param.user.tblname+' WHERE username=\''+req.body.username+'\'',(err,row)=>{
+        .each('SELECT rowid FROM '+db_param.tbl.user.name+' WHERE username=\''+req.body.username+'\'',(err,row)=>{
           if(err){
             res.status(400)
             res.send()
           }else{
+            if(row){
+              res.status(409)
+              res.send()
+            }
             const hash=new SHA3(256)
             hash.update(req.body.password)
-            db.run('INSERT INTO '+db_param.user.tblname+' (username,password,email,active,creation_date) VALUES (\''+req.body.username+'\',\''+hash.digest('hex')+'\',\''+req.body.email+',1,\''+new Date().toString()+'\')',(err)=>{
+            db.run('INSERT INTO '+db_param.user.tblname+' (username,password,email,active,creation_date) VALUES (\''+req.body.username+'\',\''+hash.digest('hex')+'\',\''+req.body.email+',0,\''+new Date().toString()+'\')',(err)=>{
               if(err){
                 res.status(500)
                 res.send()
               }else{
                 res.status(200)
-                res.redirect('/')
+                res.send('/')
               }
             })
           }
@@ -183,7 +185,6 @@ module.exports=function(req,res,next){
         res.status(400)
         res.send()
       }else{
-        const db_param=require(path.resolve(__dirname,"db.js"))
         let adb= new sqlite3.Database(db_param.app.dbname,sqlite3.OPEN_READWRITE |sqlite3.OPEN_CREATE,(err)=>{
           if(err)
             next(err)
