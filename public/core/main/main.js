@@ -1,5 +1,6 @@
 var meta={auth_server:'/oauth'}
 meta.request_uri=meta.auth_server+'/request'
+meta.validate_uri=meta.auth_server+'/validate'
 meta.auth_uri=meta.auth_server+'/authorise?response_type=token&client_id=0&redirect_uri&scope=read write'
 
 var currentPage=''
@@ -52,7 +53,7 @@ function getUserName(){
     let token=localStorage.getItem("tok")
     if(token){
       let xhr=new XMLHttpRequest()
-      xhr.open('POST',meta.request_uri)
+      xhr.open('POST',meta.validate_uri)
       xhr.setRequestHeader('Content-Type','application/json')
       xhr.send(JSON.stringify({token:token}))
       xhr.onload=function(){
