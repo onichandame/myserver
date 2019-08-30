@@ -1,10 +1,18 @@
 module.exports.auth={dbname:require('path').resolve(db_path(),"auth.sqlite3"),
                      tbl:{user:cred,
                           pri:pri,
-                          app:app}
+                          app:app
+                          pend:pend}
 }
 module.exports.main={dbname:require('path').resolve(db_path(),'main.sqlite3'),
                      tbl:{session:main_sess}
+}
+const pend={name:'TablePendingApp',
+            col:{name:'TEXT NOT NULL',
+                 main_uri:'TEXT NOT NULL',
+                 redirect_uri:'TEXT NOT NULL',
+                 submission_date:'TEXT NOT NULL',
+                 submitted_by:'TEXT'}
 }
 const main_sess={name:'TableSession',
                  col:{token:'TEXT NOT NULL',
@@ -26,6 +34,9 @@ const app={name:"TableApp",
            col:{name:'TEXT NOT NULL',
                 main_uri:'TEXT NOT NULL',
                 redirect_uri:'TEXT NOT NULL',
+                approval_date:'TEXT NOT NULL',
+                approved_by:'TEXT NOT NULL',
+                pri:'INT NOT NULL',
                 secret:'TEXT NOT NULL'}
 }
 function db_path(){

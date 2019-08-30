@@ -50,8 +50,8 @@ module.exports=function(req,res,next){
       }
     }else if(pt.includes('newuser')){
       res.render('core/auth/newuser.auth.pug')
-    }else if(pt.includes('register-app')){
-      res.render('core/auth/register-app.auth.pug')
+    }else if(pt.includes('newapp')){
+      res.render('core/auth/newapp.auth.pug')
     }else{
       decodeToken(req.cookies.token,(err,token)=>{
         if(err)
@@ -134,8 +134,10 @@ module.exports=function(req,res,next){
       }
     }else if(pt.includes('newuser')){
       let db=new sqlite3.Database(db_param.dbname,sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE,(err)=>{
-        if (err)
-          next(err)
+        if (err){
+          res.status(500)
+          res.send()
+        }
       })
       db.serialize(function(){
         var sql='CREATE TABLE IF NOT EXISTS '
@@ -155,29 +157,27 @@ module.exports=function(req,res,next){
         })
         .each('SELECT rowid FROM '+db_param.tbl.user.name+' WHERE username=\''+req.body.username+'\'',(err,row)=>{
           if(err){
-            res.status(400)
+            res.status(500)
             res.send()
           }else{
             if(row){
               res.status(409)
               res.send()
             }
-            const hash=new SHA3(256)
-            hash.update(req.body.password)
-            db.run('INSERT INTO '+db_param.user.tblname+' (username,password,email,active,creation_date) VALUES (\''+req.body.username+'\',\''+hash.digest('hex')+'\',\''+req.body.email+',0,\''+new Date().toString()+'\')',(err)=>{
+            db.run('INSERT INTO '+db_param.user.tblname+' (username,password,email,active,creation_date) VALUES (\''+req.body.username+'\',\''+hashCode(req.body.password)+'\',\''+req.body.email+',0,\''+new Date().toString()+'\')',(err)=>{
               if(err){
                 res.status(500)
                 res.send()
               }else{
                 res.status(200)
-                res.send('/')
+                res.send()
               }
             })
           }
         })
         .close()
       })
-    }else if(pt.includes('register-app')){
+    }else if(pt.includes('newapp')){
       const name=req.body.appname
       const main=req.body.url
       const redi=req.body.redirect
@@ -186,8 +186,10 @@ module.exports=function(req,res,next){
         res.send()
       }else{
         let adb= new sqlite3.Database(db_param.app.dbname,sqlite3.OPEN_READWRITE |sqlite3.OPEN_CREATE,(err)=>{
-          if(err)
-            next(err)
+          if(err){
+            res.status(500)
+            res.send()
+          }
           })
         adb.serialize(function(){
           const hash=new SHA3(256)
@@ -248,4 +250,10 @@ function decodeToken(token,callback){
     else 
       callback(err,result)
   })
+}
+
+function hashCode(password){
+  const hash=new SHA3(256)
+  hash.update(password)
+  return hash.digest('hex')
 }
