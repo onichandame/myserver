@@ -1,12 +1,3 @@
-module.exports.auth={dbname:require('path').resolve(db_path(),"auth.sqlite3"),
-                     tbl:{user:cred,
-                          pri:pri,
-                          app:app
-                          pend:pend}
-}
-module.exports.main={dbname:require('path').resolve(db_path(),'main.sqlite3'),
-                     tbl:{session:main_sess}
-}
 const pend={name:'TablePendingApp',
             col:{name:'TEXT NOT NULL',
                  main_uri:'TEXT NOT NULL',
@@ -46,4 +37,13 @@ function db_path(){
     fs.mkdirSync(dp)
   }
   return dp
+}
+module.exports.auth={dbname:require('path').resolve(db_path(),"auth.sqlite3"),
+                     tbl:{user:cred,
+                          pri:pri,
+                          app:app,
+                          pend:pend}
+}
+module.exports.main={dbname:require('path').resolve(db_path(),'main.sqlite3'),
+                     tbl:{session:main_sess}
 }
