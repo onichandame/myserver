@@ -285,3 +285,11 @@ function sendActivationCode(secret,email,req){
     }
   })
 }
+function sendMail(title,correspondent,text){
+  var nodemailer=require('nodemailer')
+  let transporter=nodemailer.createTransport({
+    sendmail:true,
+    newline:'windows',
+    path:''
+  })
+}
