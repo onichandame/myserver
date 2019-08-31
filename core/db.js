@@ -38,8 +38,14 @@ function db_path(){
   }
   return dp
 }
+const activation={name:'TableActiv',
+                  col:{email:'TEXT NOT NULL',
+                       secret:'TEXT NOT NULL',
+                       name:'TEXT NOT NULL'}
+}
 module.exports.auth={dbname:require('path').resolve(db_path(),"auth.sqlite3"),
                      tbl:{user:cred,
+                          activation:activation,
                           pri:pri,
                           app:app,
                           pend:pend}

@@ -141,9 +141,9 @@ module.exports=function(req,res,next){
       })
       db.serialize(function(){
         var sql='CREATE TABLE IF NOT EXISTS '
-        sql += db_param.tbl.user.name 
+        sql += db_param.tbl.activation.name 
         sql += ' ('
-        for(const [key,value] of Object.entries(db_param.tbl.user.col)){
+        for(const [key,value] of Object.entries(db_param.tbl.activation.col)){
           sql += key 
           sql += ' '
           sql += value 
@@ -155,20 +155,22 @@ module.exports=function(req,res,next){
           if(err)
             next(err)
         })
-        .each('SELECT rowid FROM '+db_param.tbl.user.name+' WHERE username=\''+req.body.username+'\'',(err,row)=>{
+        .each('SELECT '+db_param.tbl.user+'.rowid as uid FROM '+db_param.tbl.user.name+' WHERE email=\''+req.body.email+'\'',(err,row)=>{
           if(err){
             res.status(500)
             res.send()
           }else{
-            if(row){
+            if(row.uid){
               res.status(409)
               res.send()
             }
-            db.run('INSERT INTO '+db_param.user.tblname+' (username,password,email,active,creation_date) VALUES (\''+req.body.username+'\',\''+hashCode(req.body.password)+'\',\''+req.body.email+',0,\''+new Date().toString()+'\')',(err)=>{
+            const secret=hashCode(new Date().toString())
+            db.run('INSERT INTO '+db_param.activation.tblname+' (name,secret,email) VALUES (\''+req.body.username+'\',\''+secret+'\',\''+req.body.email+'\')',(err)=>{
               if(err){
                 res.status(500)
                 res.send()
               }else{
+                sendActivationCode(secret,req.body.email,req)
                 res.status(200)
                 res.send()
               }
@@ -181,21 +183,21 @@ module.exports=function(req,res,next){
       const name=req.body.appname
       const main=req.body.url
       const redi=req.body.redirect
-      if(!(name)){
+      const email=req.body.email
+      if(!(name&&email)){
         res.status(400)
         res.send()
       }else{
-        let adb= new sqlite3.Database(db_param.app.dbname,sqlite3.OPEN_READWRITE |sqlite3.OPEN_CREATE,(err)=>{
+        let adb= new sqlite3.Database(db_param.dbname,sqlite3.OPEN_READWRITE |sqlite3.OPEN_CREATE,(err)=>{
           if(err){
             res.status(500)
             res.send()
           }
           })
         adb.serialize(function(){
-          const hash=new SHA3(256)
           hash.update(new Date().toString())
           var sql='CREATE TABLE IF NOT EXISTS '
-          sql += db_param.app.tblname 
+          sql += db_param.pend.tblname 
           sql += ' ('
           for(const [key,value] of Object.entries(db_param.app.col)){
             sql += key 
@@ -206,24 +208,32 @@ module.exports=function(req,res,next){
           sql=sql.slice(0,-1)
           sql += ')'
           adb.run(sql,(err)=>{
-            if(err)
-              next(err)
-          })
-          .run('INSERT INTO '+db_param.app.tblname+' (name,main_uri,redirect_uri,secret) VALUES (\''+name+'\',\''+main+'\',\''+redi+'\',\''+hash.digest('hex')+'\')',(err)=>{
-            if(err)
-              next(err)
-          })
-          .each('SELECT rowid,secret FROM '+db_param.app.tblname+' WHERE name=\''+name+'\' AND main_uri=\''+main+'\'',(err,row)=>{
             if(err){
               res.status(500)
               res.send()
-            }else{
-              res.json({aid:row.rowid,
-                        secret:row.secret})
             }
           })
+          .each('SELECT main_uri FROM '+db_path.pend.name+' WHERE name=\''+name+'\'',(err,row)=>{
+            if(err){
+              res.status(500)
+              res.send()
+            }
+            if(row.main_uri){
+              res.status(409)
+              res.send()
+            }
+          })
+          .run('INSERT INTO '+db_param.pend.name+' (name,main_uri,redirect_uri,submission_date,submitted_by) VALUES (\''+name+'\',\''+main+'\',\''+redi+'\',\''+new Date().toString()+'\',\''+email+'\')',(err)=>{
+            if(err){
+              res.status(500)
+              res.send()
+            }
+          })
+          res.status(200)
+          res.send()
         })
       }
+    }else if(pt.includes('activate')){
     }
   }
 }
@@ -256,4 +266,22 @@ function hashCode(password){
   const hash=new SHA3(256)
   hash.update(password)
   return hash.digest('hex')
+}
+function sendActivationCode(secret,email,req){
+  var nodemailer=require('nodemailer')
+  var sender=nodemailer.createTransport({host:'smtp.163.com',
+                                         port:25,
+                                         secure:false,
+                                         auth:{user:'ku.china@163.com',
+                                               pass:'1995115'}})
+  sender.verify(function(err,success){
+    if(err){
+      console.log('failed to connect to email')
+    }else{
+      sender.sendMail({from:'account@xiaoweb.com',
+      to:email,
+      subject:'Activate your account',
+      text:req.baseUrl+''})
+    }
+  })
 }

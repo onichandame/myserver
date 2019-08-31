@@ -66,15 +66,15 @@ All columns above are NOT NULL.
 - **user.email** is the email of the user.
 - **user.creation\_date** is the date of creation of the account in the default format of Date.toString
 - **pri.rowid** is the uid of the user
-- **pri.pri** is the priviledge level of the user.
+- **pri.pri** is the priviledge level of the user. founder(0), admin(1), client(3)
 - **app.rowid** is the cid of the app
 - **app.name** is the title of the app
 - **app.url** is the main page url of the app, not including the base url of this site or the trailing backslash
 - **app.callback** is the base redirect url of the app where the user will be redirected when authenticated
 - **app.secret** is the app's password in clear text. It is created by hashing the date using SHA-3
 - **app.approval\_date** is the date on which the app is approved by an inspector
-- **app.approved\_by** is the uid by which the app is approved
-- **app.pri** is the priviledge of the app on the user info.
+- **app.approved\_by** is the uid by which the app is approved. 
+- **app.pri** is the priviledge of the app on the user info. read&write(0), read(1)
 - **pend.name** is the same as **app.name**
 - **pend.main\_uri** is the same as **app.main\_uri**
 - **pend.redirect\_uri** is the same as **app.redirect\_uri**
@@ -105,11 +105,9 @@ The app can now be authorised. But how is the user authenticated?
 #### Register
 Both the user and app needs to be registered. The ui is designed as shown in the following section.
 
-The user can be registered immediately. The app needs to be approved by users with certain permissions. Therefore the user database needs to have the second table:
-- priviledge
-  - pri(INT)
+The user can be registered immediately. The app needs to be approved by users with certain permissions. Currently there are 3 levels of priviledges: founder(0), admin(1), client(3). only admin and founder can approve or deny applications.
 
-The column above are NOT NULL. The table includes a hidden column rowid used as user uid. At present there are 3 levels of priviledges: founder(0), admin(1) and client(3).
+Once the app is approved, it will be moved to the **app** table.
 
 ### Resources
 Having the above design in mind, it is very clear now what functions the service needs to provide.
@@ -118,6 +116,7 @@ Having the above design in mind, it is very clear now what functions the service
 - **Delete user** baseurl/deluser POST
 - **Delete app** baseurl/delapp POST
 - **Activate user** baseurl/activate GET&POST
+- **Approve app** baseurl/approv POST
 - **Reset user** baseurl/resetuser POST
 - **Request user** baseurl/request POST
 - **Authenticate user** baseurl/authenticate GET&POST
