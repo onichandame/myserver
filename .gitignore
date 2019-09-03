@@ -9,3 +9,4 @@ sqlite3.def
 node_modules/
 db
 *.swp
+test
