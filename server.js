@@ -9,6 +9,7 @@ const cookieParser=require('cookie-parser')
 app.set('views','views')
 app.set('view engine','pug')
 
+initiate()
 app.use(express.static(path.join(__dirname, 'public')))
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended: false}))
@@ -16,9 +17,25 @@ app.use(cookieParser())
 
 app.use(require(path.resolve(__dirname,"routes/error.js")))
 
-app.all('/',  require(path.resolve(__dirname,'core/main.js')))
+app.all('/newuser',  require(path.resolve(__dirname,'core/newuser.js')))
 
-app.all(/\/oauth\//, require(path.resolve(__dirname,'core/auth.js')))
+app.post('/newapp',  require(path.resolve(__dirname,'core/newapp.js')))
+
+app.post('/deluser', require(path.resolve(__dirname,'core/deluser.js')))
+
+app.post('/delapp', require(path.resolve(__dirname,'core/delapp.js')))
+
+app.all('/activate', require(path.resolve(__dirname,'core/activate.js')))
+
+app.post('/resetuser', require(path.resolve(__dirname,'core/resetuser.js')))
+
+app.post('/request', require(path.resolve(__dirname,'core/request.js')))
+
+app.all('/authenticate', require(path.resolve(__dirname,'core/authenticate.js')))
+
+app.get('/authorize', require(path.resolve(__dirname,'core/authorize.js')))
+
+app.post('/token', require(path.resolve(__dirname,'core/token.js')))
 
 app.get('/video', function(req, res) {
   const path = 'assets/sample.mp4'
@@ -57,3 +74,19 @@ app.get('/video', function(req, res) {
 app.listen(port, function (){
   console.log('Listening on port 8080!')
 })
+
+function initiate(){
+  const path='./config.json'
+  try{
+    if(fs.existsSync(path)){
+      var config=fs.readFileSync(path)
+      if(config.db_key){
+        return
+      }else{
+      }
+    }else{
+      throw 'no configuration file detected'
+    }
+  }catch(e){
+  }
+}
