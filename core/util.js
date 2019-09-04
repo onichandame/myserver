@@ -1,4 +1,4 @@
-module.exports.sendActivationCode=function(secret,email,req){
+module.exports.sendActivationCode= async function(info){
   var nodemailer=require('nodemailer')
   var sender=nodemailer.createTransport({host:'smtp.163.com',
                                          port:25,
