@@ -6,7 +6,7 @@ module.exports=function(req,res,next){
   const randomString=require('randomstring')
   const db_param=require(path.resolve(__dirname,"db.js"))
   if(req.method=='GET'){
-    res.render('newuser.auth.pug')
+    res.render('newuser.pug')
   // post with given name, surname, name order, email
   }else if(req.method=='POST'){
     const family_name=req.body.family_name
@@ -15,7 +15,7 @@ module.exports=function(req,res,next){
     const name_order=req.body.name_order
     if(!(family_name&&given_name&&email&&name_order==0||name_order==1))
       next({code:400})
-    let db=new sqlite3.Database(db_param.dbname,sqlite3.OPEN_READWRITE|sqlite3.OPEN_CREATE,(err)={
+    let db=new sqlite3.Database(db_param.dbname,sqlite3.OPEN_READWRITE|sqlite3.OPEN_CREATE,(err)=>{
       if(err)
         next({code:500})
     })

@@ -15,10 +15,11 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended: false}))
 app.use(cookieParser())
 
-app.use(require(path.resolve(__dirname,"core/error.js")))
+app.use('/',require(path.resolve(__dirname,"core/error.js")))
 
 app.all('/newuser',  require(path.resolve(__dirname,'core/newuser.js')))
 
+/*
 app.post('/newapp',  require(path.resolve(__dirname,'core/newapp.js')))
 
 app.post('/deluser', require(path.resolve(__dirname,'core/deluser.js')))
@@ -37,6 +38,7 @@ app.get('/authorize', require(path.resolve(__dirname,'core/authorize.js')))
 
 app.post('/token', require(path.resolve(__dirname,'core/token.js')))
 
+*/
 app.get('/video', function(req, res) {
   const path = 'assets/sample.mp4'
   const stat = fs.statSync(path)
