@@ -9,11 +9,14 @@ The main function of this website is my personal homepage. For this purpose, the
 
 ![home](public/readme/home.png)
 
-The left panel is for my personal information. The static content include an avatar, name and title. These are grouped on the top half. The dynamic contents are my experiences. Each experience is grouped in 1 block. On collapse, only the title and the main objective are shown. On expansion, the achievements are shown. The dynamic part can scroll up and down.
+The entire page is a React app by design. The main goal is to showcase myself.
 
-The main part of the page is dyed dark. Below the welcome message is the showcase part. Each item is grouped into 1 card. 2 cards are aligned in 1 row. The background of the cards should also be black. The main part can be scrolled up and down as a whole.
+The left panel is for my personal information. The static content include an avatar, name and title. These are grouped on the top half. The dynamic contents are my experiences. Each experience is grouped in 1 block. On collapse, only the title and the main objective are shown. On expansion, the achievements are shown. The dynamic part can scroll up and down. The data is retrieved from the local database.
+
+The main part of the page is dyed dark. Below the welcome message is the showcase part. Each item is grouped into 1 card. 2 cards are aligned in 1 row. The background of the cards should also be black. The main part can be scrolled up and down as a whole while keeping the background image on the top complete. The data is retrieved from the local database.
 
 Above all is navbar. The homepage is displayed above. The about page displays contact info and legal announcement of this website. The App tab should have its own page displaying all the apps hosted on this site.
+
 
 ![about](public/readme/about.png)
 
@@ -23,7 +26,46 @@ On the far right of the navbar is the built-in auth service. The auth info is us
 
 ![profile](public/readme/profile.png)
 
-The logout button logs out the current user and returns the main page.
+The logout button logs out the current user and redirects to the main page.
+
+The whole structure is based on Server/Client architecture.
+
+## Data Flow
+
+The overall connection is show below
+
+![dataflow](public/readme/dataflow.png)
+
+As shown above, the server only handles authentication/authorisation and registration. These tasks are all initiated not by the server but the client or directly by the user. Therefore the UI and data structure of the server is quite simple.
+
+## Data Structure
+
+The server needs to store and distribute user info on requests. Therefore it will need a database.
+- user
+  - **given\_name(TEXT):** real given name
+  - **family\_name(TEXT):** real surname
+  - **name\_order(INT):** 0: surname first; 1: given name first
+  - **password(TEXT):** SHA3 hash of password
+  - **active(INT):** 0: requires password reset; 1: normal state
+  - **email(TEXT):** login name and main contact method
+  - **creation\_date(TEXT):** the date of creation
+
+As no user will be allowed to view or change others' data, no priviledge pyramid is implemented.
+
+For app management, priviledge is introduced.
+- app
+  - **name(TEXT):** app name
+  - **type(INT):** 0: web app; 1: native app
+  - **callback(TEXT):** redirect uri
+  - **secret(TEXT):** for identifying the app
+  - **creator(INT):** id of creator
+  - **priviledge(INT):** 0: read/write; 1: read
+
+- user
+  - **rowid(INT):** id of users with app-related priviledges
+  - **level(INT):** 0: admin; 1: add/delete
+
+For session management i.e. token management, no database is involved but all information is stored in the token itself by JWT with a shared key known only by the server. Therefore the server will extract the information directly from the access token for authorisation.
 
 # Core Services
 
@@ -36,27 +78,6 @@ The most important service is the authentication service as many web apps hosted
 Based on the design, the service needs to have 1 SQL database with 4 tables:
 
 #### auth
-- user
-  - name(TEXT)
-  - password(TEXT)
-  - active(INT)
-  - email(TEXT)
-  - creation\_date(TEXT)
-- pri
-  - pri(INT)
-- app
-  - name(TEXT)
-  - url(TEXT)
-  - callback(TEXT)
-  - approval\_date(TEXT)
-  - approved\_by(INT)
-  - secret(TEXT)
-- pend
-  - name(TEXT)
-  - main\_uri(TEXT)
-  - redirect\_uri(TEXT)
-  - submission\_date(TEXT)
-  - submitted\_by(INT)
 
 All columns above are NOT NULL.
 - **user.rowid** is the uid of the user
