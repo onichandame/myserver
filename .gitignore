@@ -10,3 +10,4 @@ node_modules/
 db
 *.swp
 test
+package-lock.json
