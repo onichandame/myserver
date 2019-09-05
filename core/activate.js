@@ -60,6 +60,6 @@ module.exports=function(req,res,next){
       })
     })
   }else{
-    next((code:422))
+    next({code:422})
   }
 }
