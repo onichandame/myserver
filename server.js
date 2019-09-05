@@ -19,14 +19,14 @@ app.use('/',require(path.resolve(__dirname,"core/error.js")))
 
 app.all('/newuser',  require(path.resolve(__dirname,'core/newuser.js')))
 
+app.post('/activate', require(path.resolve(__dirname,'core/activate.js')))
+
 /*
 app.post('/newapp',  require(path.resolve(__dirname,'core/newapp.js')))
 
 app.post('/deluser', require(path.resolve(__dirname,'core/deluser.js')))
 
 app.post('/delapp', require(path.resolve(__dirname,'core/delapp.js')))
-
-app.all('/activate', require(path.resolve(__dirname,'core/activate.js')))
 
 app.post('/resetuser', require(path.resolve(__dirname,'core/resetuser.js')))
 
@@ -82,13 +82,51 @@ function initiate(){
   try{
     if(fs.existsSync(path)){
       var config=fs.readFileSync(path)
-      if(config.db_key){
-        return
-      }else{
+      if(!config.db_key){
+        config.db_key=generateKey()
       }
     }else{
-      throw 'no configuration file detected'
+      let config.db_key=generateKey()
     }
+    fs.writeFileSync(path,JSON.stringify(config))
+    checkDatabase()
   }catch(e){
+    console.log(e.message)
+  }
+  function checkDatabase(){
+    const db_param=require(path.resolve(__dirname,"core/db.js"))
+    let db=new sqlite3.Database(db_param.dbname,sqlite3.OPEN_READWRITE|sqlite3.OPEN_CREATE,(err)=>{
+      if(err)
+        throw 'failed to check database: '+err.message
+    })
+    db.serialize(function(){
+      for(tbl in db_param.tbl){
+        db.run((createTableSQL(tbl),(err)=>{
+          if(err)
+            throw 'Table '+tbl.name+' failed on creation: '+err.message
+        }))
+      }
+    })
+  }
+  function generateKey(){
+    const randomString=require('randomstring')
+    db_key=randomString.generate({length:32,
+      charset:'alphabetic'})
+    return db_key
+  }
+  }
+  function createTableSQL(tbl){
+    var sql='CREATE TABLE IF NOT EXISTS '
+    sql += tbl.name
+    sql += ' ('
+    for(const [key,value] of Object.entries(tbl.col)){
+      sql += key 
+      sql += ' ' 
+      sql += value 
+      sql +=','
+    }
+    sql=sql.slice(0,-1)
+    sql += ')' 
+    return sql
   }
 }

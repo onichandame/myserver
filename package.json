@@ -10,6 +10,7 @@
     "nodemon": "^1.11.0",
     "pug": "^2.0.4",
     "randomstring": "^1.1.5",
+    "sendmail": "^1.6.1",
     "sha3": "^2.0.6",
     "sqlite3": "^4.0.9",
     "tingodb": "^0.6.1"
