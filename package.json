@@ -8,6 +8,7 @@
     "express": "^4.15.3",
     "mysql": "^2.17.1",
     "nodemon": "^1.11.0",
+    "path": "^0.12.7",
     "pug": "^2.0.4",
     "randomstring": "^1.1.5",
     "sendmail": "^1.6.1",

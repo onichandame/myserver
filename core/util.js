@@ -1,23 +1,32 @@
 module.exports.sendActivationCode= async function(info){
-  var code.email=info.email
+  var code={}
+  code.email=info.email
   code.secret=info.secret
   code.creation_date=info.creation_date
   const req=info.req
   const given_name=info.given_name
   const pug=require('pug')
   const fs=require('fs')
-  const file='../views/activation.pug'
+  const file='../views/activate.pug'
   fs.readFile(file,(err,data)=>{
     if(err){
       console.log(err.message)
     }else{
-      let text=pug.compile(data,{secret:secret,
-        given_name:given_name})
-      sendMail('Activate Your Account',email,text)
+      generateJWT(code,(err,result)=>{
+        if(err){
+          console.log(err.message)
+        }else{
+          let text=pug.compile(data,{code:result,
+                                     given_name:given_name})
+          sendMail('Activate Your Account',email,text,(err)=>{
+            console.log(err.message)
+          })
+        }
+      })
     }
   })
 }
-module.exports.sendMail=async function(title,correspondent,text){
+module.exports.sendMail=async function(title,correspondent,text,callback){
   var sendmail=require('sendmail')({logger:{debug:console.log,
     info:console.info,
     warn:console.warn,
@@ -29,28 +38,27 @@ module.exports.sendMail=async function(title,correspondent,text){
     subject:title,
     html:text},(err,reply)=>{
       if(err)
-        console.log(err.message)
+        callback(err)
   })
 }
 
 const config_path='../config.json'
 
-function generateToken(token,callback){
+module.exports.generateJWT=async function(obj,callback){
   var jwt=require('jsonwebtoken')
   fs.readFile(config_path,(err,data)=>{
-    const db_key=data.db_key
-    jwt.sign(token.access_token,db_key,{algorithms:'HS256'},(err,result)=>{
-      if(err){
+    const config=JSON.parse(data)
+    const db_key=config.db_key
+    jwt.sign(obj,db_key,{algorithms:'HS256'},(err,result)=>{
+      if(err)
         callback(err)
-      }else{
-        token.access_token=result
-        callback(err,token)
-      }
+      else
+        callback(err,result)
     })
   })
 }
 
-function decodeToken(token,callback){
+module.exports.decodeJWT=async function(token,callback){
   var jwt=require('jsonwebtoken')
   fs.readFile(config_path,(err,data)=>{
     jwt.verify(token,token_key,{algorithms:'HS256'},(err,result)=>{
@@ -62,7 +70,7 @@ function decodeToken(token,callback){
   })
 }
 
-function hashCode(password){
+module.exports.hashCode=function(password){
   const hash=new SHA3(256)
   hash.update(password)
   return hash.digest('hex')

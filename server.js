@@ -1,6 +1,7 @@
 const express = require('express')
 const bodyParser=require('body-parser')
 const fs = require('fs')
+const sqlite3=require('sqlite3').verbose()
 const path = require('path')
 const app = express()
 const port = 8080
@@ -15,11 +16,13 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended: false}))
 app.use(cookieParser())
 
-app.use('/',require(path.resolve(__dirname,"core/error.js")))
-
 app.all('/newuser',  require(path.resolve(__dirname,'core/newuser.js')))
 
-app.post('/activate', require(path.resolve(__dirname,'core/activate.js')))
+app.get('/',(req,res)=>{
+  res.render('activate.pug',{code:1232435,given_name:'xiao'})
+})
+
+app.all('/activate', require(path.resolve(__dirname,'core/activate.js')))
 
 /*
 app.post('/newapp',  require(path.resolve(__dirname,'core/newapp.js')))
@@ -78,17 +81,20 @@ app.listen(port, function (){
 })
 
 function initiate(){
-  const path='./config.json'
+  const file='./config.json'
   try{
-    if(fs.existsSync(path)){
-      var config=fs.readFileSync(path)
+    config={}
+    if(fs.existsSync(file)){
+      config=JSON.parse(fs.readFileSync(file))
       if(!config.db_key){
         config.db_key=generateKey()
+        fs.writeFileSync(file,JSON.stringify(config))
       }
     }else{
-      let config.db_key=generateKey()
+      let config={}
+      config.db_key=generateKey()
+      fs.writeFileSync(file,JSON.stringify(config))
     }
-    fs.writeFileSync(path,JSON.stringify(config))
     checkDatabase()
   }catch(e){
     console.log(e.message)
@@ -101,10 +107,10 @@ function initiate(){
     })
     db.serialize(function(){
       for(tbl in db_param.tbl){
-        db.run((createTableSQL(tbl),(err)=>{
+        db.run(createTableSQL(db_param.tbl[tbl]),(err)=>{
           if(err)
             throw 'Table '+tbl.name+' failed on creation: '+err.message
-        }))
+        })
       }
     })
   }
@@ -113,7 +119,6 @@ function initiate(){
     db_key=randomString.generate({length:32,
       charset:'alphabetic'})
     return db_key
-  }
   }
   function createTableSQL(tbl){
     var sql='CREATE TABLE IF NOT EXISTS '

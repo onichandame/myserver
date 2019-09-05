@@ -13,5 +13,11 @@ module.exports=function(err,req,res,next){
   }else if(err.code==400){
     res.status(err.code)
     res.send()
+  }else if(err.code==422){
+    res.status(err.code)
+    if(req.xhr)
+      res.send()
+    else
+      res.render('invalid.err.pug')
   }
 }
