@@ -54,7 +54,7 @@ $(document).ready(function(){
 
   // Submission
   $('#submit').click(function(){
-    let xhr=new XmlHttpRequest()
+    let xhr=new XMLHttpRequest()
     xhr.open('POST','')
     const form=$('form').serializeArray()
     var body=''

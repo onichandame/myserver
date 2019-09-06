@@ -16,12 +16,35 @@ module.exports.sendActivationCode= async function(info){
         if(err){
           console.log(err.message)
         }else{
-          let text=pug.compile(data,{code:result,
-                                     given_name:given_name})
-          sendMail('Activate Your Account',email,text,(err)=>{
-            console.log(err.message)
+          fs.readFile('../config.json',(err,conf)=>{
+            if(err){
+              console.log(err.message)
+            }else{
+              const config=JSON.parse(conf)
+              code.baseurl=config.base
+              let text=pug.compile(data,{given_name:given_name,
+                                         lk:baseurl+'?code='+result})
+              sendMail('Activate Your Account',email,text,(err)=>{
+                console.log(err.message)
+              })
+            }
           })
         }
+      })
+    }
+  })
+}
+module.exports.sendApp=async function(info,callback){
+  const fs=require('fs')
+  const file='../views/init.app.pug'
+  fs.readFile(file,(err,data)=>{
+    if(err){
+      console.log(err.message)
+    }else{
+      let text=pug.compile(data,info)
+      sendMail('Your app has been registered',info.email,text,(err)=>{
+        if(err)
+          callback(err)
       })
     }
   })

@@ -5,38 +5,38 @@ var valid={address:false,
 var order=0
 function update(){
   var flag=true
-  for(var i in valid){
-    if(!i)
+  for(const i in valid){
+    if(!valid[i])
       flag=false
   }
   // update button
-  if(!flag)
-    $('#submit').attr('disabled',true)
-  else
+  if(flag)
     $('#submit').attr('disabled',false)
+  else
+    $('#submit').attr('disabled',true)
   // update warning message
   // email field
-  flag=!(valid.address&&valid.posifix)
-  if(!flag){
-    if($('.email~p').length<1){
-      $('.email').after('<p>invalid email address</p>')
-      var popper=new Popper($('.email~p'),$('.email'),{placement:'right'})
-    }
-  }else{
+  flag=valid.address&&valid.postfix
+  if(flag){
     if($('.email~p').length>0){
       $('.email~p').remove()
     }
+  }else{
+    if($('.email~p').length<1){
+      $('.email').after('<p>invalid email address</p>')
+      var popper=new Popper($('.email'),$('.email~p'),{placement:'right'})
+    }
   }
   // name field
-  flag=!(valid.given_name&&valid.family_name)
-  if(!flag){
-    if($('.name~p').length<1){
-      $('.name').after('<p>invalid name</p>')
-      var popper=new Popper($('.name~p'),$('.name'),{placement:'right'})
-    }
-  }else{
+  flag=valid.given_name&&valid.family_name
+  if(flag){
     if($('.name~p').length>0){
       $('.name~p').remove()
+    }
+  }else{
+    if($('.name~p').length<1){
+      $('.name').after('<p>invalid name</p>')
+      var popper=new Popper($('.name'),$('.name~p'),{placement:'right'})
     }
   }
 }
@@ -53,18 +53,21 @@ $(document).ready(function(){
       valid.postfix=false
     else
       valid.postfix=true
+    update()
   })
   $('input[name=given_name]').change(function(){
     if($('input[name=given_name]').val().length<1)
       valid.given_name=false
     else
       valid.given_name=true
+    update()
   })
   $('input[name=family_name]').change(function(){
     if($('input[name=family_name]').val().length<1)
       valid.family_name=false
     else
       valid.family_name=true
+    update()
   })
 
   // name order
@@ -82,9 +85,8 @@ $(document).ready(function(){
 
   // Submission
   $('#submit').click(function(){
-    const uri=[document.location.protocol, '//', document.location.host, document.location.pathname].join('');
-    let xhr=new XmlHttpRequest()
-    xhr.open('POST',uri)
+    let xhr=new XMLHttpRequest()
+    xhr.open('POST','')
     const form=$('form').serializeArray()
     let body=''
     let email=''
@@ -97,6 +99,7 @@ $(document).ready(function(){
         body+=item.name+'='+item.value+'&'
     })
     body+='email='+email
+    xhr.setRequestHeader('Content-Type','application/x-www-form-urlencoded')
     xhr.send(body)
     xhr.onload=function(){
       if(xhr.status==200){

@@ -14,7 +14,7 @@ module.exports=function(req,res,next){
     const given_name=req.body.given_name
     const email=req.body.email
     const name_order=req.body.name_order
-    if(!(family_name&&given_name&&email&&name_order==0||name_order==1))
+    if(!(family_name&&given_name&&email&&(name_order==0||name_order==1)))
       next({code:400})
     let db=new sqlite3.Database(db_param.dbname,sqlite3.OPEN_READWRITE|sqlite3.OPEN_CREATE,(err)=>{
       if(err)

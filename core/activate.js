@@ -1,6 +1,7 @@
 // POST with query string encoded in jwt: email, secret, creation_date
 module.exports=function(req,res,next){
   const path=require('path')
+  const randomString=require('randomstring')
   const db_param=require(path.resolve(__dirname,"db.js"))
   const sqlite3=require('sqlite3').verbose()
   const decode=require(path.resolve(__dirname,'util.js')).decodeJWT
@@ -24,8 +25,17 @@ module.exports=function(req,res,next){
         db.run('UPDATE '+db_param.tbl.user.name+' SET active=1,password=\''+hash(password)+'\' WHERE rowid='+id,(err)=>{
           if(err)
             next({code:500})
-          res.status(200)
-          res.send()
+          if(id==1){
+            db.run('INSERT INTO '+db_param.tbl.appadmin.name+' (rowid,level) VALUES ('+id+',0)',(err)=>{
+              if(err)
+                next({code:500})
+              res.status(200)
+              res.render('init.admin.pug')
+            })
+          }else{
+            res.status(200)
+            res.send()
+          }
         })
       })
     }else{
@@ -58,6 +68,49 @@ module.exports=function(req,res,next){
           }
         })
       })
+    })
+    // Handle first app's registration
+  }else if(!(req.query.admin===undefined)){
+    const name=req.body.name
+    const callback=req.body.admin
+    const type=req.body.type
+    if(!(name&&callback&&(type==0||type==1)))
+      next({code:400})
+    let db=new sqlite3.Database(db_param.dbname,sqlite3.OPEN_READWRITE|sqlite3.OPEN_CREATE,(err)=>{
+      if(err)
+        next({code:500})
+    })
+    db.serialize(function(){
+      db.each('SELECT rowid FROM '+db_param.tbl.app.name,(err,row)=>{
+        if(err)
+          next({code:500})
+        next({code:303})
+      })
+      .each('SELECT rowid FROM '+db_param.tbl.appadmin.name+' WHERE level=0',(err,row)=>{
+        if(err)
+          next({code:500})
+        db.run('INSERT INTO '+db_param.tbl.app.name+' (name,type,callback,secret,creator,priviledge) VALUES (\''+name+'\','+type+'\',\''+callback+'\',\''+randomString.generate({length:20,charset:'alphabetic'}+'\','+row.rowid+',0)',(err)=>{
+          if(err)
+            next({code:500})
+          var lid=this.lastID
+          db.each('SELECT type,name,secret FROM '+db_param.tbl.app.name+' WHERE rowid='+lid,(err,rowa)=>{
+            if(err)
+              next({code:500})
+            db.each('SELECT given_name,email FROM '+db_param.tbl.user.name+' WHERE rowid='+row.rowid,(err,rowu)=>{
+              if(err)
+                next({code:500})
+              const sender=require(path.resolve(__dirname,'util.js')).sendApp
+              sender({email:rowu.email,name:rowa.name,given_name:rowu.given_name,secret:rowa.secret,type:rowa.type},(err)=>{
+                if(err)
+                  console.log('failed to send app info')
+              })
+              res.status(200)
+              res.send()
+            })
+          })
+        }))
+      })
+      .close()
     })
   }else{
     next({code:422})

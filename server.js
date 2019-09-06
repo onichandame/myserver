@@ -19,7 +19,7 @@ app.use(cookieParser())
 app.all('/newuser',  require(path.resolve(__dirname,'core/newuser.js')))
 
 app.get('/',(req,res)=>{
-  res.render('activate.pug',{code:1232435,given_name:'xiao'})
+  res.render('init.admin.pug')
 })
 
 app.all('/activate', require(path.resolve(__dirname,'core/activate.js')))
