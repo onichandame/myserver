@@ -90,15 +90,8 @@ $(document).ready(function(){
     const form=$('form').serializeArray()
     let body=''
     let email=''
-    form.forEach((item,index)=>{
-      if(item.name=='address')
-        email=item.value+email
-      else if(item.name=='postfix')
-        email=email+'@'+item.value
-      else
-        body+=item.name+'='+item.value+'&'
-    })
-    body+='email='+email
+    email=$('input[name=address').val()+'@'+$('input[name=postfix]')
+    body+='given_name='+$('input[name=given_name').val()+'&family_name='+$('input[name=family_name').val()+'&email='+email+'&name_order='+order
     xhr.setRequestHeader('Content-Type','application/x-www-form-urlencoded')
     xhr.send(body)
     xhr.onload=function(){

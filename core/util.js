@@ -3,7 +3,7 @@ module.exports.sendActivationCode= async function(info){
   code.email=info.email
   code.secret=info.secret
   code.creation_date=info.creation_date
-  const req=info.req
+  const baseurl=info.baseurl
   const given_name=info.given_name
   const pug=require('pug')
   const fs=require('fs')
@@ -16,19 +16,15 @@ module.exports.sendActivationCode= async function(info){
         if(err){
           console.log(err.message)
         }else{
-          fs.readFile('../config.json',(err,conf)=>{
-            if(err){
+          if(err){
+            console.log(err.message)
+          }else{
+            let text=pug.compile(data,{given_name:given_name,
+                                       lk:baseurl+'?code='+result})
+            sendMail('Activate Your Account',email,text,(err)=>{
               console.log(err.message)
-            }else{
-              const config=JSON.parse(conf)
-              code.baseurl=config.base
-              let text=pug.compile(data,{given_name:given_name,
-                                         lk:baseurl+'?code='+result})
-              sendMail('Activate Your Account',email,text,(err)=>{
-                console.log(err.message)
-              })
-            }
-          })
+            })
+          }
         }
       })
     }
