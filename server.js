@@ -20,7 +20,10 @@ app.use('/',require(path.resolve(__dirname,'core/error.js')))
 app.all('/newuser',  require(path.resolve(__dirname,'core/newuser.js')))
 
 app.get('/',(req,res)=>{
-  res.render('init.admin.pug')
+  const sender=require(path.resolve(__dirname,'core/util.js')).sendMail
+  sender('test','zxinmyth@gmail.com','test heklo',(err)=>{
+    console.log(err)
+  })
 })
 
 app.all('/activate', require(path.resolve(__dirname,'core/activate.js')))

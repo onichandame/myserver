@@ -3,7 +3,7 @@ var valid={pass:false,
 function update(){
   var flag=true
   for(var i in valid){
-    if(!i)
+    if(!valid[i])
       flag=false
   }
   // update button
@@ -15,8 +15,8 @@ function update(){
   flag=valid.pass
   if(!flag){
     if($('.pass~p').length<1){
-      $('.pass').after('<p>password needs to be 6 to 16 characters long and have at least 1 digit and 1 special character.</p>')
-      var popper=new Popper($('.pass~p'),$('.pass'),{placement:'right'})
+      $('.pass').after('<p>6-16 characters and at least 1 digit and 1 special character.</p>')
+      var popper=new Popper($('.pass'),$('.pass~p'),{placement:'right'})
     }
   }else{
     if($('.pass~p').length>0){
@@ -24,11 +24,11 @@ function update(){
     }
   }
   // confirm field
-  flag=!(valid.given_name&&valid.family_name)
+  flag=valid.confirm
   if(!flag){
     if($('.confirm~p').length<1){
       $('.confirm').after('<p>this field needs to match the previous field</p>')
-      var popper=new Popper($('.confirm~p'),$('.confirm'),{placement:'right'})
+      var popper=new Popper($('.confirm'),$('.confirm~p'),{placement:'right'})
     }
   }else{
     if($('.confirm~p').length>0){
@@ -36,20 +36,30 @@ function update(){
     }
   }
 }
+function checkPass(){
+  var regex=/^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,16}$/
+  if(regex.test($('input[name=pass]').val()))
+    valid.pass=true
+  else
+    valid.pass=false
+}
+function checkConfirm(){
+  if($('input[name=confirm]').val()==$('input[name=pass]').val())
+    valid.confirm=true
+  else
+    valid.confirm=false
+}
+function checkBoth(){
+  checkPass()
+  checkConfirm()
+  update()
+}
 $(document).ready(function(){
   $('input[name=pass]').change(function(){
-    var regex=/^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,16}$/
-    if(!regex.test($('.pass').val()))
-      valid.pass=false
-    else
-      valid.pass=true
-    update()
+    checkBoth()
   })
   $('input[name=confirm]').change(function(){
-    if(!($('input[name=confirm]').val()!=$('input[name=pass]').val()))
-      valid.confirm=false
-    else
-      valid.confirm=true
+    checkBoth()
   })
 
   // Submission
@@ -57,11 +67,8 @@ $(document).ready(function(){
     let xhr=new XMLHttpRequest()
     xhr.open('POST','')
     const form=$('form').serializeArray()
-    var body=''
-    form.forEach((item,index)=>{
-      if(item.name=='pass')
-        body+=item.name+'='+item.value
-    })
+    var body='pass='+$('input[name=pass]').val()
+    xhr.setRequestHeader('Content-Type','application/x-www-form-urlencoded')
     xhr.send(body)
     xhr.onload=function(){
       if(xhr.status==200){
@@ -83,10 +90,3 @@ $(document).ready(function(){
     }
   })
 })
-function invalidateFields(){
-  if($('input[name=username]').length&&$('input[name=username]').val().length<7)
-    return false
-  if($('input[name=email]').length&&!$('input[name=email]').val().includes('@'))
-    return false
-  return true
-}

@@ -33,11 +33,10 @@ module.exports=function(req,res,next){
       $charset:'alphabetic'}),
       $active:0,
       $email:email,
-      $creation_date:new Date().toString()},(err)=>{
+      $creation_date:new Date().toString()},function(err){
         if(err)
           return next({code:500})
         let sender=require(path.resolve(__dirname,'util.js')).sendActivationCode
-        console.log('SELECT email,given_name,creation_date,password FROM '+db_param.tbl.user.name+' WHERE rowid='+this.lastID)
         db.each('SELECT email,given_name,creation_date,password FROM '+db_param.tbl.user.name+' WHERE rowid='+this.lastID,(err,row)=>{
           if(err){
             console.log(err)
@@ -45,10 +44,9 @@ module.exports=function(req,res,next){
           }
           sender({secret:row.password,
           email:row.email,
-          baseurl:req.protocol+'://'+req.hostname+':8080',
+          baseurl:req.protocol+'://'+req.hostname+':8080/activate',
           given_name:row.given_name,
-          creation_date:row.creation_date,
-          req:req})
+          creation_date:row.creation_date})
         })
         res.status(200)
         if(req.xhr)

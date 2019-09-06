@@ -1,74 +1,57 @@
-module.exports.sendActivationCode= async function(info){
+const path=require('path')
+const config_path=path.resolve(__dirname,'../config.json')
+const fs=require('fs')
+const {SHA3}=require('sha3')
+const pug=require('pug')
+
+async function sendActivationCode(info){
   var code={}
   code.email=info.email
   code.secret=info.secret
   code.creation_date=info.creation_date
   const baseurl=info.baseurl
   const given_name=info.given_name
-  const pug=require('pug')
-  const fs=require('fs')
-  const file='../views/activate.pug'
-  fs.readFile(file,(err,data)=>{
+  const file=path.resolve(__dirname,'../views/activate.pug')
+  generateJWT(code,(err,result)=>{
     if(err){
+      console.log('failed signing')
       console.log(err.message)
     }else{
-      generateJWT(code,(err,result)=>{
-        if(err){
-          console.log(err.message)
-        }else{
-          if(err){
-            console.log(err.message)
-          }else{
-            let text=pug.compile(data,{given_name:given_name,
-                                       lk:baseurl+'?code='+result})
-            sendMail('Activate Your Account',email,text,(err)=>{
-              console.log(err.message)
-            })
-          }
-        }
-      })
-    }
-  })
-}
-module.exports.sendApp=async function(info,callback){
-  const fs=require('fs')
-  const file='../views/init.app.pug'
-  fs.readFile(file,(err,data)=>{
-    if(err){
-      console.log(err.message)
-    }else{
-      let text=pug.compile(data,info)
-      sendMail('Your app has been registered',info.email,text,(err)=>{
+      let text=pug.renderFile(file,{given_name:given_name,
+                                     lk:baseurl+'?code='+result})
+      sendMail('Activate Your Account',info.email,text,(err)=>{
         if(err)
-          callback(err)
+          console.log(err)
       })
     }
   })
 }
-module.exports.sendMail=async function(title,correspondent,text,callback){
-  var sendmail=require('sendmail')({logger:{debug:console.log,
-    info:console.info,
-    warn:console.warn,
-    error:console.error},
-    silent:false})
+async function sendApp(info,callback){
+  const file=path.resolve(__dirname,'../views/init.app.pug')
+  let text=pug.renderFile(file,info)
+  sendMail('Your app has been registered',info.email,text,(err)=>{
+    if(err)
+      console.log(err)
+  })
+}
+async function sendMail(title,correspondent,text,callback){
+  var sendmail=require('sendmail')({silent:true})
   sendmail({
     from:'no-reply@xiao.com',
     to:correspondent,
     subject:title,
     html:text},(err,reply)=>{
-      if(err)
-        callback(err)
+      console.dir(reply)
+      callback(err)
   })
 }
 
-const config_path='../config.json'
-
-module.exports.generateJWT=async function(obj,callback){
+async function generateJWT(obj,callback){
   var jwt=require('jsonwebtoken')
   fs.readFile(config_path,(err,data)=>{
     const config=JSON.parse(data)
     const db_key=config.db_key
-    jwt.sign(obj,db_key,{algorithms:'HS256'},(err,result)=>{
+    jwt.sign(obj,db_key,{algorithm:'HS256'},(err,result)=>{
       if(err)
         callback(err)
       else
@@ -77,10 +60,12 @@ module.exports.generateJWT=async function(obj,callback){
   })
 }
 
-module.exports.decodeJWT=async function(token,callback){
+async function decodeJWT(token,callback){
   var jwt=require('jsonwebtoken')
   fs.readFile(config_path,(err,data)=>{
-    jwt.verify(token,token_key,{algorithms:'HS256'},(err,result)=>{
+    const config=JSON.parse(data)
+    const db_key=config.db_key
+    jwt.verify(token,db_key,{algorithm:'HS256'},(err,result)=>{
       if(err)
         callback(err)
       else 
@@ -89,8 +74,15 @@ module.exports.decodeJWT=async function(token,callback){
   })
 }
 
-module.exports.hashCode=function(password){
+function hashCode(password){
   const hash=new SHA3(256)
   hash.update(password)
   return hash.digest('hex')
 }
+
+module.exports={sendMail:sendMail,
+  sendActivationCode:sendActivationCode,
+  sendApp:sendApp,
+  generateJWT:generateJWT,
+  decodeJWT:decodeJWT,
+  hashCode:hashCode}

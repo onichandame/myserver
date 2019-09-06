@@ -14,7 +14,6 @@ function update(){
     $('#submit').attr('disabled',false)
   else
     $('#submit').attr('disabled',true)
-  // update warning message
   // email field
   flag=valid.address&&valid.postfix
   if(flag){
@@ -89,8 +88,7 @@ $(document).ready(function(){
     xhr.open('POST','')
     const form=$('form').serializeArray()
     let body=''
-    let email=''
-    email=$('input[name=address').val()+'@'+$('input[name=postfix]')
+    let email=$('input[name=address').val()+'@'+$('input[name=postfix]').val()
     body+='given_name='+$('input[name=given_name').val()+'&family_name='+$('input[name=family_name').val()+'&email='+email+'&name_order='+order
     xhr.setRequestHeader('Content-Type','application/x-www-form-urlencoded')
     xhr.send(body)
