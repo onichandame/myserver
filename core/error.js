@@ -1,5 +1,4 @@
 module.exports=function(err,req,res,next){
-  console.log(err.code)
   if(err.code==500){
     res.status(err.code)
     res.render('unknown.err.pug')

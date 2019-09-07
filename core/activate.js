@@ -13,30 +13,34 @@ module.exports=function(req,res,next){
       res.render('init.pass.pug')
     }else if(req.method=='POST'){
       const password=req.body.pass
-      console.log(password)
       var regex=/^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,16}$/
       if(!regex.test(password))
         return next({code:422})
       let db=new sqlite3.Database(db_param.dbname,sqlite3.OPEN_READWRITE|sqlite3.OPEN_CREATE,(err)=>{
-        if(err)
+        if(err){
           return next({code:500})
+        }
       })
       db.serialize(function(){
         const hash=require(path.resolve(__dirname,'util.js')).hashCode
         db.run('UPDATE '+db_param.tbl.user.name+' SET active=1,password=\''+hash(password)+'\' WHERE rowid='+id,(err)=>{
-          if(err)
+          if(err){
             return next({code:500})
-          if(id==1){
-            db.run('INSERT INTO '+db_param.tbl.appadmin.name+' (rowid,level) VALUES ('+id+',0)',(err)=>{
-              if(err)
-                return next({code:500})
-              res.status(200)
-              res.render('init.admin.pug')
-            })
-          }else{
-            res.status(200)
-            res.send()
           }
+        })
+        .each('SELECT rowid FROM '+db_param.tbl.user.name,function(err,row){},(err,num)=>{
+          if(num==1)
+            db.serialize(function(){
+              db.run('INSERT INTO '+db_param.tbl.appadmin.name+' (rowid,level) VALUES ('+id+',0)',(err)=>{
+                if(err){
+                  return next({code:500})
+                }
+                res.status(200)
+                res.send()
+              })
+              res.status(200)
+              res.send()
+            })
         })
       })
     }else{
@@ -61,7 +65,6 @@ module.exports=function(req,res,next){
             return next({code:500})
           if(secret==row.password&&creation_date==row.creation_date){
             res.status(302)
-            console.log('/activate?id='+row.rowid)
             res.set('Location','/activate?id='+row.rowid)
             res.send()
           }else{
