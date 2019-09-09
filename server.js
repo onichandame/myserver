@@ -19,14 +19,9 @@ app.use('/',require(path.resolve(__dirname,'core/error.js')))
 
 app.all('/newuser',  require(path.resolve(__dirname,'core/newuser.js')))
 
-app.get('/',(req,res)=>{
-  const sender=require(path.resolve(__dirname,'core/util.js')).sendMail
-  sender('test','zxinmyth@gmail.com','test heklo',(err)=>{
-    console.log(err)
-  })
-})
-
 app.all('/activate', require(path.resolve(__dirname,'core/activate.js')))
+
+app.all('/authenticate', require(path.resolve(__dirname,'core/authenticate.js')))
 
 /*
 app.post('/newapp',  require(path.resolve(__dirname,'core/newapp.js')))
@@ -38,8 +33,6 @@ app.post('/delapp', require(path.resolve(__dirname,'core/delapp.js')))
 app.post('/resetuser', require(path.resolve(__dirname,'core/resetuser.js')))
 
 app.post('/request', require(path.resolve(__dirname,'core/request.js')))
-
-app.all('/authenticate', require(path.resolve(__dirname,'core/authenticate.js')))
 
 app.get('/authorize', require(path.resolve(__dirname,'core/authorize.js')))
 

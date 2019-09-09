@@ -1,4 +1,10 @@
-// POST with query string encoded in jwt: email, secret, creation_date
+/* user clicks the url in email 'activate?code=*****
+ * server receives the code and decode the jwt
+ * server validates the email, creation_date and secret and returns pages expressing the result
+ * server displays the init pass page at 'activate?id=***'
+ * user fills the form and submit
+ * server updates the password and redirects the user to login page
+ */
 module.exports=function(req,res,next){
   const path=require('path')
   const randomString=require('randomstring')
@@ -28,8 +34,10 @@ module.exports=function(req,res,next){
             return next({code:500})
           }
         })
-        .each('SELECT rowid FROM '+db_param.tbl.user.name,function(err,row){},(err,num)=>{
-          if(num==1)
+        .get('SELECT COUNT(rowid) as num FROM '+db_param.tbl.user.name+' WHERE active=1',(err,row)=>{
+          if(err)
+            return next({code:500})
+          if(num==1){
             db.serialize(function(){
               db.run('INSERT INTO '+db_param.tbl.appadmin.name+' (rowid,level) VALUES ('+id+',0)',(err)=>{
                 if(err){
@@ -38,9 +46,11 @@ module.exports=function(req,res,next){
                 res.status(200)
                 res.send()
               })
-              res.status(200)
-              res.send()
             })
+          }else{
+            res.status(200)
+            res.send()
+          }
         })
       })
     }else{

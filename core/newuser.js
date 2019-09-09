@@ -1,3 +1,10 @@
+/* user opens '/newuser'
+ * server returns page with fields 'email' 'given_name' family_name' and 'name_order'
+ * user fills the fields and xhr post to current url
+ * server validates the info and return http status
+ * server encodes the email, creation_date and secret to jwt and sends the code to email asyncally
+ * browser receives the status code and displays the message
+ */
 module.exports=function(req,res,next){
   const path=require('path')
   const qry=req.query
