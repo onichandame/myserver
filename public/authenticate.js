@@ -58,6 +58,7 @@ $(document).ready(function(){
     xhr.open('POST','')
     const form=$('form').serializeArray()
     var body='pass='+$('input[name=pass]').val()
+    var body='email='+$('input[name=email]').val()
     xhr.setRequestHeader('Content-Type','application/x-www-form-urlencoded')
     xhr.send(body)
     xhr.onload=function(){
