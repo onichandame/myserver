@@ -16,6 +16,12 @@ module.exports=function(err,req,res,next){
       res.send()
     else
       res.render('bad.err.pug')
+  }else if(err.code==401){
+    res.status(err.code)
+    if(req.xhr)
+      res.send()
+    else
+      res.render('unauthorised.err.pug')
   }else if(err.code==422){
     res.status(err.code)
     if(req.xhr)

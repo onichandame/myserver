@@ -64,14 +64,16 @@ $(document).ready(function(){
     xhr.onload=function(){
       if(xhr.status==200){
         $('form').after('<div class="jumbotron text-center text-white bg-secondary">'+
-          '<h3>Password successfully set!</h3>'+
-          '<p>Now you can log in using your newly created account.</p>'+
+          '<h3>Log in successful!</h3>'+
+          '<p>Now you can access services on this site!</p>'+
         '</div>')
         $('form').remove()
       }else if(xhr.status==422){
         alert('The password submitted does not satisfy requirement.\n1. 6-16 characters long\n2. contains atleast 1 digit and 1 special character')
       }else if(xhr.status==500){
         alert('Server encountered an internal error.')
+      }else if(xhr.status==303){
+        window.location.replace(xhr.getResponseHeaders("Location"))
       }else{
         alert('Unknown error occurred during transmission. Contact the maintainer for help.')
       }
