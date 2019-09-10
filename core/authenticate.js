@@ -34,6 +34,7 @@ module.exports=function(req,res,next){
           valid=false
         if(!valid)
           return next({code:401})
+        if()
         if(first){
           res.status(302)
           res.set('Location','/newapp?first=true')

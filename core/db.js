@@ -18,6 +18,11 @@ const app={name:"TableApp",
                 creator:'INT NOT NULL',
                 priviledge:'INT NOT NULL'}
 }
+const session={name:'TableSession',
+               col:{creation_date:'TEXT NOT NULL',
+                    expired_in:'TEXT NOT NULL',
+                    uid:'INT NOT NULL'}
+}
 function db_path(){
   const dp=require('path').resolve(__dirname,"../db")
   const fs=require('fs')
@@ -29,5 +34,6 @@ function db_path(){
 module.exports={dbname:require('path').resolve(db_path(),"db.sqlite3"),
                    tbl:{user:user,
                         app:app,
-                        appadmin:appadmin}
+                        appadmin:appadmin,
+                        session:session}
 }

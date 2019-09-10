@@ -23,9 +23,9 @@ app.all('/activate', require(path.resolve(__dirname,'core/activate.js')))
 
 app.all('/authenticate', require(path.resolve(__dirname,'core/authenticate.js')))
 
-/*
-app.post('/newapp',  require(path.resolve(__dirname,'core/newapp.js')))
+app.all('/newapp',  require(path.resolve(__dirname,'core/newapp.js')))
 
+/*
 app.post('/deluser', require(path.resolve(__dirname,'core/deluser.js')))
 
 app.post('/delapp', require(path.resolve(__dirname,'core/delapp.js')))
