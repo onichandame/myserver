@@ -1,7 +1,11 @@
 var valid={name:false,
+  type:false,
   callback:false}
 function update(){
   var flag=true
+  // check radio
+  if($('input:checked'))
+    valid.type=true
   for(const i in valid){
     if(!valid[i])
       flag=false
@@ -58,7 +62,16 @@ $(document).ready(function(){
     let xhr=new XMLHttpRequest()
     xhr.open('POST','')
     const form=$('form').serializeArray()
-    let body='name='+$('input[name=name]').val()+'&callback='+$('input[name=callback]').val()
+    let type=0
+    if($('input:checked').attr=='web'){
+      type=0
+    }else if($('input:checked').attr=='native'){
+      type=1
+    }else{
+      alert('Unknown error occurred! Perhaps the page was hacked by an unauthorised individual.')
+      return
+    }
+    let body='name='+$('input[name=name]').val()+'&callback='+$('input[name=callback]').val()+'&type='+type
     xhr.setRequestHeader('Content-Type','application/x-www-form-urlencoded')
     xhr.send(body)
     xhr.onload=function(){

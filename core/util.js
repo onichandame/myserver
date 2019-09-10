@@ -1,5 +1,7 @@
 const path=require('path')
 const config_path=path.resolve(__dirname,'../config.json')
+const sqlite3=require('sqlite3').verbose()
+const db_param=require(path.resolve(__dirname,"db.js"))
 const fs=require('fs')
 const {SHA3}=require('sha3')
 const pug=require('pug')
@@ -74,6 +76,32 @@ async function decodeJWT(token,callback){
   })
 }
 
+function validateSid(sid){
+  let db=new sqlite3.Database(db_param.dbname,sqlite3.OPEN_READWRITE|sqlite3.OPEN_CREATE,(err)=>{
+    if(err){
+      return err
+    }
+  })
+  db.serialize(function(){
+    db.each('SELECT uid,creation_date,expired_in FROM '+db_param.tbl.session.name+' WHERE rowid='+sid,(err,row)=>{
+      if(err)
+        return err
+      var cd=row.creation_date
+      const ex=row.expired_in
+      cd.setTime(cd.getTime()+ex)
+      let flag=false
+      if(cd.getTime()<new Date().getTime())
+        flag=false
+      else
+        flag=true
+      if(flag)
+        return row.uid
+      else
+        return flag
+    })
+  })
+}
+
 function hashCode(password){
   const hash=new SHA3(256)
   hash.update(password)
@@ -85,4 +113,5 @@ module.exports={sendMail:sendMail,
   sendApp:sendApp,
   generateJWT:generateJWT,
   decodeJWT:decodeJWT,
+  validateSid:validateSid,
   hashCode:hashCode}

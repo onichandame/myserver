@@ -37,7 +37,7 @@ module.exports=function(req,res,next){
       $family_name:family_name,
       $name_order:name_order,
       $password:randomString.generate({length:20,
-      $charset:'alphabetic'}),
+      charset:'alphabetic'}),
       $active:0,
       $email:email,
       $creation_date:new Date().toString()},function(err){
