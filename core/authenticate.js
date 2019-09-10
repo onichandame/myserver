@@ -14,14 +14,14 @@ module.exports=function(req,res,next){
   }else if(req.method=='POST'){
     const email=req.body.email
     const pass=req.body.pass
-    valid=false
+    var valid=false
     //Auth code flow
     if(req.query.response_type=='code'){
       //Implicit flow
     }else if(req.query.response_type=='token'){
       //No oauth flow
     }else{
-      first=false
+      var first=false
       db.serialize(function(){
         db.get('SELECT COUNT(rowid) as num FROM '+db_param.tbl.user.name+' WHERE active=1',(err,row)=>{
           if(err)

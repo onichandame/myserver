@@ -1,0 +1,13 @@
+extends form.pug 
+
+block form
+  div(class="form-group")
+    div(class="name input-group input-group-lg row")
+      input(type="text",class="form-control",name="name",placeholder="Name")
+  div(class="form-group")
+    div(class="callback input-group input-group-lg row")
+      input(type="text",class="form-control",name="callback",placeholder="Redirect URI")
+  div(class="row justify-content-center")
+    button(id="submit",type="button",class="col-xs-10 col-md-6 col-lg-3 btn btn-primary col center-block",style="font-size:1.5rem;") Register
+block append script
+  script(src="/newapp.js")
