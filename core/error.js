@@ -1,6 +1,6 @@
 module.exports=function(err,req,res,next){
-  if(err.err)
-    console.log(err.err.message)
+  if(err.message)
+    console.log(err.message)
   if(err.code==500){
     res.status(err.code)
     res.render('unknown.err.pug')

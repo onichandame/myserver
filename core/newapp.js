@@ -20,7 +20,7 @@ module.exports=function(req,res,next){
       return next({code:401})
     db.serialize(function(){
       db.get('SELECT COUNT(rowid) as num FROM '+db_param.tbl.app.name,(err,row)=>{
-        if row.num<1{
+        if(row.num<1){
           res.status(200)
           res.render('newapp.pug')
         }else{

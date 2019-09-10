@@ -102,7 +102,7 @@ $(document).ready(function(){
       }else if(xhr.status==303){
         alert('The email has already been registered. Try another one.')
       }else if(xhr.status==500){
-        alert('Server encountered an internal error.')
+        alert(xhr.status+':Server encountered an internal error.')
       }else{
         alert('Unknown error occurred in server. Contact the maintainer for help.')
       }

@@ -25,12 +25,12 @@ module.exports=function(req,res,next){
       return next({code:400})
     let db=new sqlite3.Database(db_param.dbname,sqlite3.OPEN_READWRITE|sqlite3.OPEN_CREATE,(err)=>{
       if(err)
-        return next({code:500})
+        return next({code:500,message:err.message})
     })
     db.serialize(function(){
       db.each('SELECT rowid FROM '+db_param.tbl.user.name+' WHERE email=\''+email+'\'',(err,row)=>{
         if(err)
-          return next({code:500})
+          return next({code:500,message:err.message})
         return next({code:303})
       })
       .run('INSERT INTO '+db_param.tbl.user.name+' (given_name,family_name,name_order,password,active,email,creation_date) VALUES ($given_name,$family_name,$name_order,$password,$active,$email,$creation_date)',{$given_name:given_name,
@@ -42,13 +42,11 @@ module.exports=function(req,res,next){
       $email:email,
       $creation_date:new Date().toString()},function(err){
         if(err)
-          return next({code:500})
+          return next({code:500,message:err.message})
         let sender=require(path.resolve(__dirname,'util.js')).sendActivationCode
         db.each('SELECT email,given_name,creation_date,password FROM '+db_param.tbl.user.name+' WHERE rowid='+this.lastID,(err,row)=>{
-          if(err){
-            console.log(err)
-            return next({code:500})
-          }
+          if(err)
+            return next({code:500,message:err.message})
           sender({secret:row.password,
           email:row.email,
           baseurl:req.protocol+'://'+req.hostname+':8080/activate',

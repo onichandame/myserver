@@ -74,9 +74,12 @@ $(document).ready(function(){
       if(xhr.status==200){
         $('form').after('<div class="jumbotron text-center text-white bg-secondary">'+
           '<h3>Password successfully set!</h3>'+
-          '<p>Now you can log in using your newly created account.</p>'+
+          '<p>Redirecting to login page in 3 seconds...</p>'+
         '</div>')
         $('form').remove()
+        setTimeout(()=>{
+          window.location.replace('/authenticate')
+        },3000)
       }else if(xhr.status==422){
         alert('The password submitted does not satisfy requirement.\n1. 6-16 characters long\n2. contains atleast 1 digit and 1 special character')
       }else if(xhr.status==500){
