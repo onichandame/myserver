@@ -11,3 +11,4 @@ db
 *.swp
 test
 package-lock.json
+*.sqlite3

@@ -1,0 +1,6 @@
+{"500":{"description":"An unknown error occurred in the server. It is confirmed that your latest request has failed.","solution":["Try again","If the error persists, contact the maintainer of this site"]},
+"409":{"description":"Your request could not be processed because an existing resource already exists.","solution":["Change your request and re-submit"]},
+"400":{"description":"Your request could not be processed because the input received does not satisfy criteria","solution":"Change your request to meet the requirement and re-submit"},
+"401":{"description":"Your credentials could not be validated therefore your identity was not authenticated","solution":["Check your credentials and retry","Reset your password"]},
+"422":{"description":"Your request could not be processed because your input data is invalid.","solution":["Check your query params if GET and form entries if POST","If the error persists, contact the maintainer of this site"]},
+"405":{"description":"The server could not process your request because an unsupported method was used.","solution":["Clear cookies and refresh page","If the error persists, contact the maintainer of this site"]}}

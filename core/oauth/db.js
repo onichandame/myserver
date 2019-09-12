@@ -24,7 +24,7 @@ const session={name:'TableSession',
                     uid:'INT NOT NULL'}
 }
 function db_path(){
-  const dp=require('path').resolve(__dirname,"../db")
+  const dp=require('path').resolve(__dirname,"db")
   const fs=require('fs')
   if(!fs.existsSync(dp)){
     fs.mkdirSync(dp)
