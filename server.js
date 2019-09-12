@@ -19,8 +19,6 @@ app.use('/',require(path.resolve(__dirname,'core/error.js')))
 
 app.all('/newuser',  require(path.resolve(__dirname,'core/newuser.js')))
 
-app.all('/activate', require(path.resolve(__dirname,'core/activate.js')))
-
 app.all('/authenticate', require(path.resolve(__dirname,'core/authenticate.js')))
 
 app.all('/newapp',  require(path.resolve(__dirname,'core/newapp.js')))

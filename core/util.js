@@ -11,19 +11,20 @@ async function sendActivationCode(info){
   code.email=info.email
   code.secret=info.secret
   code.creation_date=info.creation_date
+  code.uid=info.uid
   const baseurl=info.baseurl
   const given_name=info.given_name
   const file=path.resolve(__dirname,'../views/activate.pug')
   generateJWT(code,(err,result)=>{
     if(err){
       console.log('failed signing')
-      console.log(err.message)
+      console.log(JSON.stringify(err))
     }else{
       let text=pug.renderFile(file,{given_name:given_name,
                                      lk:baseurl+'?code='+result})
       sendMail('Activate Your Account',info.email,text,(err)=>{
         if(err)
-          console.log(err)
+          console.log(JSON.stringify(err))
       })
     }
   })
@@ -33,7 +34,7 @@ async function sendApp(info,callback){
   let text=pug.renderFile(file,info)
   sendMail('Your app has been registered',info.email,text,(err)=>{
     if(err)
-      console.log(err)
+      console.log(JSON.stringify(err))
   })
 }
 async function sendMail(title,correspondent,text,callback){
@@ -65,13 +66,17 @@ async function generateJWT(obj,callback){
 async function decodeJWT(token,callback){
   var jwt=require('jsonwebtoken')
   fs.readFile(config_path,(err,data)=>{
+    if(err)
+      console.log(JSON.stringify(err))
     const config=JSON.parse(data)
     const db_key=config.db_key
     jwt.verify(token,db_key,{algorithm:'HS256'},(err,result)=>{
-      if(err)
+      if(err){
+        console.log('error occurred')
         callback(err)
-      else 
-        callback(err,result)
+      }else {
+        callback(null,result)
+      }
     })
   })
 }

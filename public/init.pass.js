@@ -64,14 +64,15 @@ $(document).ready(function(){
 
   // Submission
   $('#submit').click(function(){
+    $('#submit').attr('disabled',true)
     let xhr=new XMLHttpRequest()
     xhr.open('POST','')
-    const form=$('form').serializeArray()
     var body='pass='+$('input[name=pass]').val()
     xhr.setRequestHeader('Content-Type','application/x-www-form-urlencoded')
     xhr.send(body)
     xhr.onload=function(){
       if(xhr.status==200){
+        alert('200: Password change ok')
         $('form').after('<div class="jumbotron text-center text-white bg-secondary">'+
           '<h3>Password successfully set!</h3>'+
           '<p>Redirecting to login page in 3 seconds...</p>'+

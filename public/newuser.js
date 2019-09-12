@@ -86,10 +86,8 @@ $(document).ready(function(){
   $('#submit').click(function(){
     let xhr=new XMLHttpRequest()
     xhr.open('POST','')
-    const form=$('form').serializeArray()
-    let body=''
     let email=$('input[name=address').val()+'@'+$('input[name=postfix]').val()
-    body+='given_name='+$('input[name=given_name').val()+'&family_name='+$('input[name=family_name').val()+'&email='+email+'&name_order='+order
+    let body='given_name='+$('input[name=given_name').val()+'&family_name='+$('input[name=family_name').val()+'&email='+email+'&name_order='+order
     xhr.setRequestHeader('Content-Type','application/x-www-form-urlencoded')
     xhr.send(body)
     xhr.onload=function(){

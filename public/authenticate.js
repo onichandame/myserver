@@ -54,11 +54,11 @@ $(document).ready(function(){
 
   // Submission
   $('#submit').click(function(){
+    $('#submit').attr('disabled',true)
     let xhr=new XMLHttpRequest()
     xhr.open('POST','')
     const form=$('form').serializeArray()
-    var body='pass='+$('input[name=pass]').val()
-    var body='email='+$('input[name=email]').val()
+    var body='pass='+$('input[name=pass]').val()+'&email='+$('input[name=email]').val()
     xhr.setRequestHeader('Content-Type','application/x-www-form-urlencoded')
     xhr.send(body)
     xhr.onload=function(){
@@ -70,12 +70,21 @@ $(document).ready(function(){
         $('form').remove()
       }else if(xhr.status==422){
         alert('The password submitted does not satisfy requirement.\n1. 6-16 characters long\n2. contains atleast 1 digit and 1 special character')
+        $('#submit').attr('disabled',false)
       }else if(xhr.status==500){
         alert('Server encountered an internal error.')
+        $('#submit').attr('disabled',false)
+      }else if(xhr.status==401){
+        alert('Wrong password. Correct it and try again')
+        $('#submit').attr('disabled',false)
+      }else if(xhr.status==404){
+        alert('User not found. Correct it and try again')
+        $('#submit').attr('disabled',false)
       }else if(xhr.status==303){
         window.location.replace(xhr.getResponseHeaders("Location"))
       }else{
-        alert('Unknown error occurred during transmission. Contact the maintainer for help.')
+        alert(xhr.status+': Unknown error occurred during transmission. Retry or contact the maintainer for help.')
+        $('#submit').attr('disabled',false)
       }
     }
     xhr.onerror=function(){

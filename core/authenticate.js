@@ -14,6 +14,8 @@ module.exports=function(req,res,next){
   }else if(req.method=='POST'){
     const email=req.body.email
     const pass=req.body.pass
+    console.log(email)
+    console.log(pass)
     var valid=false
     //Auth code flow
     if(req.query.response_type=='code'){
