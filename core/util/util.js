@@ -57,6 +57,11 @@ function init(){
   }
 }
 
+/* logger
+ */
+const {createLogger,format,transport}=require('winston')
+const {combine,timestamp,label,printf}=format
+const info
 const logger={info:winston.createLogger({
   level:'info',
   format:winston.format.json()
