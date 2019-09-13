@@ -12,41 +12,96 @@ const pug=require('pug')
 const dbconfig=path.resolve(__dirname,'dbconfig.json')
 
 /* Database. Only basic operations
- * select(tbl,[targets],'condition'/{condition},callback(err,row))
- * add(tbl,[{entries}],callback(err,lastID))
- * update(tbl,{target},'condition'/{condition},callback(err,lastID))
+ *
+ * Roadmap:
+ * 1. add/update multiple rows
+ * 2. add/update provide lastID to callback
+ *
+ * select(tbl,[targets],'condition',callback(err,row))
+ * add(tbl,{entries},callback(err))
+ * update(tbl,{target},'condition'/{condition},callback(err))
  */
-async function select(tbl,target,cond,callback){
-}
-async function add(tbl,row,callback){
+async function update(tbl,entries,cond,callback){
   fs.readFile(dbconfig,(err,data)=>{
     if(err)
-      logger.log({level:'error',message:'Failed reading '+dbconfig+' when add '+JSON.stringify(row)+' to '+tbl})
+      logger.log({level:'error',message:'Failed reading '+dbconfig+' when update '+JSON.stringify(entries)+' with conditions '+cond+' in '+tbl})
     const db_param=JSON.parse(data)
+    if(!(db_param.user&&db_param.password&&db_param.host&&db_param.port&&db_param.dbname))
+      logger.log({level:'error',message:'dbconfig file could not be parsed to obj containing enough data'})
     mysqlx.getSession({user:db_param.user,
                        password:db_param.password,
                        host:db_param.host,
                        port:db_param.port
     })
     .then((session)=>{
-      let tbl=session.getSchema(db_param.dbname).getTable(tbl)
-      if(Array.isArray(row)){
-        if(row.length<1)
-          callback({code:1,message:'empty'})
-        tbl.insert(Object.keys(row[0]))
-        row.forEach((one)=>{
-          tbl.values(Object.values(one))
+      let upd=session
+        .getSchema(db_param.dbname)
+        .getTable(tbl)
+        .update(cond)
+      for(const [key,val] of entries.entries()
+        upd.set(key,val)
+      return upd.execute(()=>{
+          return callback(null)
         })
-      }
     })
-    if(Array.isArray(row)){
-      row.forEach((one)=>{
-        addRow(one)
-      })
-    }else{
-      addRow(row)
-    }
-    if(!(db_param && db_param.dbname && db_param.url && db_param.head))
+    .catch((err)=>{
+      return callback(err)
+    })
+  })
+}
+async function select(tbl,target,cond,callback){
+  fs.readFile(dbconfig,(err,data)=>{
+    if(err)
+      logger.log({level:'error',message:'Failed reading '+dbconfig+' when select '+JSON.stringify(target)+' with conditions '+cond+' in '+tbl})
+    const db_param=JSON.parse(data)
+    if(!(db_param.user&&db_param.password&&db_param.host&&db_param.port&&db_param.dbname))
+      logger.log({level:'error',message:'dbconfig file could not be parsed to obj containing enough data'})
+    mysqlx.getSession({user:db_param.user,
+                       password:db_param.password,
+                       host:db_param.host,
+                       port:db_param.port
+    })
+    .then((session)=>{
+      return session
+        .getSchema(db_param.dbname)
+        .getTable(tbl)
+        .select(target)
+        .where(cond)
+        .execute((row)=>{
+          return callback(null,row)
+        })
+    })
+    .catch((err)=>{
+      return callback(err)
+    })
+  })
+}
+async function addRow(tbl,row,callback){
+  fs.readFile(dbconfig,(err,data)=>{
+    if(err)
+      logger.log({level:'error',message:'Failed reading '+dbconfig+' when add '+JSON.stringify(row)+' to '+tbl})
+    const db_param=JSON.parse(data)
+    if(!(db_param.user&&db_param.password&&db_param.host&&db_param.port&&db_param.dbname))
+      logger.log({level:'error',message:'dbconfig file could not be parsed to obj containing enough data'})
+    mysqlx.getSession({user:db_param.user,
+                       password:db_param.password,
+                       host:db_param.host,
+                       port:db_param.port
+    })
+    .then((session)=>{
+      return session
+        .getSchema(db_param.dbname)
+        .getTable(tbl)
+        .insert(Object.keys(row))
+        .values(Object.values(row))
+        .execute()
+    })
+    .then(()=>{
+      return callback()
+    })
+    .catch((err)=>{
+      return callback(err)
+    })
   })
 }
 
@@ -92,7 +147,7 @@ class MyLogger extends Transport{
       else if(info.level<1)
         fs.writeFileSync(errdir,'['+lvl+']'+info.message)
       else
-        add('TableLog',info)
+        addRow('TableLog',info)
       if(info.level>2)
         process.exit(3)
     })
@@ -144,27 +199,61 @@ function validateSid(sid){
 }
 
 /* initiation
+ *
  */
 function init(){
+  var info={}
   if(fs.existsSync(dbconfig)){
+    info.dbconfig=true
     db_param=JSON.parse(fs.readFileSync(dbconfig))
-    if(!(db_param && db_param.dbname && db_param.url && db_param.head))
-      initDB()
+    if(db_param && db_param.dbname && db_param.url && db_param.head)
+      checkCon((result)=>{
+        info.dbconfig=result
+      })
     else
-      checkCon()
+      initDBConfig()
     function checkCon(){
-      try{
-        const session=await mysqlx.getSession(db_param.url)
-      }catch(e){
-      }
+      mysqlx.getSession({user:db_param.user,
+                         password:db_param.password,
+                         host:db_param.host,
+                         port:db_param.port
+      })
+      .then((session)=>{
+        var schema=session.getSchema(db_param.dbname)
+        schema.existsInDatabase()
+          .then((flag)=>{
+            if(flag)
+              info.db=true
+            else
+              createDB()
+          })
+      })
+      .catch((err)=>{
+        info.db=false
+      })
+    }
+    function createDB(){
+      mysqlx.getSession({user:db_param.user,
+                         password:db_param.password,
+                         host:db_param.host,
+                         port:db_param.port
+      })
+      .then((session)=>{
+        return 
+      })
+    }
+    function initDBConfig(){
     }
   }else{
+    info.dbconfig=false
   }
 }
 
 module.exports={
-  validateSid:validateSid,
-  sql:{select:select},
+  logger:logger,
+  sql:{select:select,
+       update:update,
+       addRow:addRow},
   nosql:{},
   init:init
 }
