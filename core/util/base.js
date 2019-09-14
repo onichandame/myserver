@@ -21,6 +21,22 @@ const pug=require('pug')
  */
 const dbconfig=path.resolve(global.basedir,'dbconfig.json')
 
+async function connect(){
+  fs.readFile(dbconfig,(err,data)=>{
+    if(err)
+      logger.log({level:'error',message:'Failed reading '+dbconfig+' when update '+JSON.stringify(entries)+' with conditions '+cond+' in '+tbl})
+    const db_param=JSON.parse(data)
+    if(!(db_param.user&&db_param.password&&db_param.host&&db_param.port&&db_param.dbname))
+      logger.log({level:'error',message:'dbconfig file could not be parsed to obj containing enough data'})
+    resolve(mysqlx.getSession({user:db_param.user,
+                               password:db_param.password,
+                               host:db_param.host,
+                               port:db_param.port
+      })
+    )
+  })
+}
+
 async function update(tbl,entries,cond,callback){
   fs.readFile(dbconfig,(err,data)=>{
     if(err)
@@ -149,7 +165,7 @@ class MyLogger extends Transport{
       else
         addRow('TableLog',info)
       if(info.level>2)
-        process.exit(3)
+        process.exit()
     })
     callback()
   }
@@ -216,12 +232,9 @@ function init(){
   info.dbconfig=true      // info.dbconfig: dbconfig file accessibility and validity
   info.db=true            // info.db: db connectivity and table validity
   global.basedir=findBaseDir()
-  error=console.log
   // Check base directory(where the main process is located)
-  if(!basedir){
-    error('Root directory could not be found')
-    process.exit()
-  }
+  if(!basedir)
+    exit('Root directory could not be found')
   // Check log dir
   try{
     fs.accessSync(logdir,fs.constants.F_OK|fs.constants.W_OK)
@@ -236,8 +249,7 @@ function init(){
       fs.writeFileSync(errdir,'','w')
       fs.accessSync(errdir,fs.constants.F_OK|fs.constants.W_OK)
     }catch(er){
-      error('Failed to open '+errdir+'. '+er.message)
-      process.exit()
+      exit('Failed to open '+errdir+'. '+er.message)
     }
   }
   // Check dbconfig accessibility
@@ -247,8 +259,7 @@ function init(){
     try{
       fs.writeFileSync(dbconfig,'')
     }catch(er){
-      error('dbconfig file '+dbconfig+' not accessible')
-      process.exit()
+      exit('dbconfig file '+dbconfig+' not accessible')
     }
   }
   // Check dbconfig validity
@@ -275,56 +286,79 @@ function init(){
       fs.writeFileSync(dbconfig,'{"dbname":"HomeSite","user":"homesite","password":"123456","host":"localhost","port":"33060","head":"CollectionMeta"','w')
       dbparam=JSON.parse(fs.readFileSync(dbconfig))
     }
-    mysqlx.getSession({user:dbparam.user,
-                       password:dbparam.password,
-                       host:dbparam.host,
-                       port:dbparam.port
-    })
-    .then((session)=>{
-      var schema=session.getSchema(dbparam.dbname)
-      schema
-        .existsInDatabase()
-        .then((flag)=>{
-          if(flag){
-            resolve(schema)
-          }else{
-            resolve(await session.createSchema(dbparam.dbname)
-              .then((schema)=>{
-                resolve(schema)
+    connect()
+      .then((session)=>{
+        // Check schema. terminate if not accessible
+        var schema=session.getSchema(dbparam.dbname)
+        schema
+          .existsInDatabase()
+          .then((flag)=>{
+            if(flag){
+              resolve(schema)
+            }else{
+              resolve(await session.createSchema(dbparam.dbname)
+                .then((schema)=>{
+                  resolve(schema)
+                })
+                .catch((err)=>{
+                  exit('Failed to create database')
+                })
+              )
+            }
+          })
+          .then((schema)=>{
+            // Check Head
+            var head=schema.getCollection(dbparam.head)
+            head.existsInDatabase()
+              .then((flag)=>{
+                if(flag)
+                  resolve(head)
+                else
+                  resolve(await schema.createCollection(dbparam.head)
+                    .then((colle)=>{
+                      resolve(colle)
+                    })
+                    .catch((err)=>{
+                      exit('Failed to create collection '+dbparam.head)
+                    })
+                  )
               })
-              .catch((err)=>{
-                error('Failed to create database')
-                process.exit()
+          })
+          .then((colle)=>{
+            // Check SQL tables
+            colle
+              .find('type="sql"')
+              .execute((doc)=>{
+                if(!(doc.name&&doc.col&&doc.alias))
+                  exit('Inconsistancy found in SQL table '+JSON.stringify(doc))
+                try{
+                  var tbl=schema.getCollectionAsTable(doc.name)
+                  tbl
+                    .select(Object.keys(doc.col))
+                    .limit(1)
+                    .execute((row)=>{
+                      const cols=row.getColumns()
+                      Object.keys(doc.col).forEach((one)=>{
+                        if(row[one]===undefined)
+                          exit('Inconsistency found in SQL table '+JSON.stringify(doc)+'. column '+one+' not found')
+                      })
+                    })
+                }catch(e){
+                  exit('Inconsistancy found in SQL table '+JSON.stringify(doc))
+                }
               })
-            )
-          }
-        })
-        .then((schema)=>{
-          var head=schema.getCollection(dbparam.head)
-          head.existsInDatabase()
-            .then((flag)=>{
-              if(flag)
-                resolve(head)
-              else
-                resolve(await schema.createCollection(dbparam.head)
-                  .then((colle)=>{
-                    resolve(colle)
-                  })
-                  .catch((err)=>{
-                    error('Failed to create collection '+dbparam.head)
-                    process.exit()
-                  })
-                )
-            })
-        })
-        .then((colle)=>{
-
-        })
-        .catch((err)=>{
-          error('Failed to connect to database')
-          process.exit()
-        })
-    })
+          })
+          .catch((err)=>{
+            exit('Failed to connect to database')
+          })
+      })
+      .catch((err)=>{
+        error('Failed to create session')
+      })
+    function exit(message){
+      console.log(message)
+      process.exit()
+    }
   }catch(e){
     error()
   }
