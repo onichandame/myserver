@@ -7,8 +7,6 @@ const app = express()
 const port = 8080
 const cookieParser=require('cookie-parser')
 
-const global.__basedir=path.resolve(__dirname)
-
 app.set('views','views')
 app.set('view engine','pug')
 

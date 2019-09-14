@@ -9,8 +9,6 @@ const db_param=require(path.resolve(__dirname,"db.js"))
 const fs=require('fs')
 const pug=require('pug')
 
-const dbconfig=path.resolve(__dirname,'dbconfig.json')
-
 /* Database. Only basic operations
  *
  * Roadmap:
@@ -21,6 +19,8 @@ const dbconfig=path.resolve(__dirname,'dbconfig.json')
  * add(tbl,{entries},callback(err))
  * update(tbl,{target},'condition'/{condition},callback(err))
  */
+const dbconfig=path.resolve(global.basedir,'dbconfig.json')
+
 async function update(tbl,entries,cond,callback){
   fs.readFile(dbconfig,(err,data)=>{
     if(err)
@@ -154,7 +154,7 @@ class MyLogger extends Transport{
     callback()
   }
 }
-const logdir=path.resolve(__basedir,'log')
+const logdir=path.resolve(global.basedir,'log')
 const errdir=path.resolve(logdir,'error.log')
 const logger=winston.createLogger({levels:levels,
                                  format:info_format,
@@ -200,53 +200,162 @@ function validateSid(sid){
 
 /* initiation
  *
+ * Check error file
+ *   if not accessible, print error and hang
+ * Check database configuration file
+ *   if not present, try create default
+ *     if creation failed, throw error
+ * Check db tables
+ *   if not present, try create empty ones
+ *   if present with wrong columns, throw error
  */
 function init(){
   var info={}
-  if(fs.existsSync(dbconfig)){
-    info.dbconfig=true
-    db_param=JSON.parse(fs.readFileSync(dbconfig))
-    if(db_param && db_param.dbname && db_param.url && db_param.head)
-      checkCon((result)=>{
-        info.dbconfig=result
-      })
-    else
-      initDBConfig()
-    function checkCon(){
-      mysqlx.getSession({user:db_param.user,
-                         password:db_param.password,
-                         host:db_param.host,
-                         port:db_param.port
-      })
-      .then((session)=>{
-        var schema=session.getSchema(db_param.dbname)
-        schema.existsInDatabase()
-          .then((flag)=>{
-            if(flag)
-              info.db=true
-            else
-              createDB()
-          })
-      })
-      .catch((err)=>{
-        info.db=false
-      })
-    }
-    function createDB(){
-      mysqlx.getSession({user:db_param.user,
-                         password:db_param.password,
-                         host:db_param.host,
-                         port:db_param.port
-      })
-      .then((session)=>{
-        return 
-      })
-    }
-    function initDBConfig(){
-    }
-  }else{
-    info.dbconfig=false
+  info.basedir=true
+  info.errfile=true       // info.errfile: error file accessibility
+  info.dbconfig=true      // info.dbconfig: dbconfig file accessibility and validity
+  info.db=true            // info.db: db connectivity and table validity
+  global.basedir=findBaseDir()
+  error=console.log
+  // Check base directory(where the main process is located)
+  if(!basedir){
+    error('Root directory could not be found')
+    process.exit()
   }
+  // Check log dir
+  try{
+    fs.accessSync(logdir,fs.constants.F_OK|fs.constants.W_OK)
+  }catch(e){
+    error('Log directory '+logdir+' is not accessible')
+  }
+  // Check error log file
+  try{
+    fs.accessSync(errdir,fs.constants.F_OK|fs.constants.W_OK)
+  }catch(e){
+    try{
+      fs.writeFileSync(errdir,'','w')
+      fs.accessSync(errdir,fs.constants.F_OK|fs.constants.W_OK)
+    }catch(er){
+      error('Failed to open '+errdir+'. '+er.message)
+      process.exit()
+    }
+  }
+  // Check dbconfig accessibility
+  try{
+    fs.accessSync(dbconfig,fs.constants.F_OK|fs.constants.W_OK)
+  }catch(e){
+    try{
+      fs.writeFileSync(dbconfig,'')
+    }catch(er){
+      error('dbconfig file '+dbconfig+' not accessible')
+      process.exit()
+    }
+  }
+  // Check dbconfig validity
+  //
+  // dbname: schema name
+  // user: username for schema
+  // password: password for schema
+  // host: host of database
+  // port: listening port of the database
+  // head: collection name for metadata
+  //       {alias:shortname,
+  //        name:table/collection name,
+  //        type:sql/nosql,
+  //        col:{colname:type} (if sql)
+  //        }
+  //
+  // Check DB validity
+  // 1. Check DB existance
+  // 2. Check Head existance
+  // 3. Check Table/Collection existance/validity
+  try{
+    var dbparam=JSON.parse(fs.readFileSync(dbconfig))
+    if(!(db_param.user&&db_param.password&&db_param.host&&db_param.port&&db_param.dbname&&db_param.head)){
+      fs.writeFileSync(dbconfig,'{"dbname":"HomeSite","user":"homesite","password":"123456","host":"localhost","port":"33060","head":"CollectionMeta"','w')
+      dbparam=JSON.parse(fs.readFileSync(dbconfig))
+    }
+    mysqlx.getSession({user:dbparam.user,
+                       password:dbparam.password,
+                       host:dbparam.host,
+                       port:dbparam.port
+    })
+    .then((session)=>{
+      var schema=session.getSchema(dbparam.dbname)
+      schema
+        .existsInDatabase()
+        .then((flag)=>{
+          if(flag){
+            resolve(schema)
+          }else{
+            resolve(await session.createSchema(dbparam.dbname)
+              .then((schema)=>{
+                resolve(schema)
+              })
+              .catch((err)=>{
+                error('Failed to create database')
+                process.exit()
+              })
+            )
+          }
+        })
+        .then((schema)=>{
+          var head=schema.getCollection(dbparam.head)
+          head.existsInDatabase()
+            .then((flag)=>{
+              if(flag)
+                resolve(head)
+              else
+                resolve(await schema.createCollection(dbparam.head)
+                  .then((colle)=>{
+                    resolve(colle)
+                  })
+                  .catch((err)=>{
+                    error('Failed to create collection '+dbparam.head)
+                    process.exit()
+                  })
+                )
+            })
+        })
+        .then((colle)=>{
+
+        })
+        .catch((err)=>{
+          error('Failed to connect to database')
+          process.exit()
+        })
+    })
+  }catch(e){
+    error()
+  }
+}
+function findBaseDir(){
+  const files=['server.js','package.json']
+  const dirs=['core','node_modules','views']
+  let curdir=__dirname
+  var result=false
+  try{
+    while(!result){
+      let flag=true
+      files.forEach((file)=>{
+        const filename=path.resolve(curdir,file)
+        if(!(fs.existsSync(filename)&&fs.statSync(filename).isFile()))
+          flag=false
+      })
+      dirs.forEach((dir)=>{
+        const dirname=path.resole(curdir.dir)
+        if(!(fs.existsSync(dirname)&&fs.statSync(dirname).isDirectory()))
+          flag=false
+      })
+      if(!flag)
+        curdir=path.resolve(curdir,'..')
+      else
+        result=curdir
+    }
+  }catch(e){
+    result=false
+  }
+  return result
 }
 
 module.exports={
