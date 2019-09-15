@@ -332,17 +332,8 @@ function init(){
                 if(!(doc.name&&doc.col&&doc.alias))
                   exit('Inconsistancy found in SQL table '+JSON.stringify(doc))
                 try{
-                  var tbl=schema.getCollectionAsTable(doc.name)
-                  tbl
-                    .select(Object.keys(doc.col))
-                    .limit(1)
-                    .execute((row)=>{
-                      const cols=row.getColumns()
-                      Object.keys(doc.col).forEach((one)=>{
-                        if(row[one]===undefined)
-                          exit('Inconsistency found in SQL table '+JSON.stringify(doc)+'. column '+one+' not found')
-                      })
-                    })
+                  session.sql('SELECT * FROM '+doc.name+' LIMIT 1').execute((row)=>{},(meta)=>{
+                  })
                 }catch(e){
                   exit('Inconsistancy found in SQL table '+JSON.stringify(doc))
                 }
