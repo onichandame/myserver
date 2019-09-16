@@ -1,1 +1,12 @@
-{"db_key":"tHarNXwrfxqshuGHWdkdnNwfuUprZvqG"}
+{"db_key":"tHarNXwrfxqshuGHWdkdnNwfuUprZvqG",
+  "dbpath":"db",
+  "dbname":"db.sqlite3",
+  "head":"TableHead",
+  "log":{
+    "name":"TableLog",
+    "cols":{
+      "timestamp":"TEXT NOT NULL"},
+      "level":"INT NOT NULL",
+      "message":"TEXT NOT NULL"
+  }
+}
