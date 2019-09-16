@@ -1,15 +1,4 @@
-/* Basic database actions and all logger functions
- * Some initiation at server startup
- */
-const path=require('path')
-const winston=require('winston')
-const mysqlx=require('@mysql/xdevapi')
-const sqlite3=require('sqlite3').verbose()
-const db_param=require(path.resolve(__dirname,"db.js"))
-const fs=require('fs')
-const pug=require('pug')
-
-/* Database. Only basic operations
+/* Database. Only basic operations without wrapped log utility
  *
  * Roadmap:
  * 1. add/update multiple rows
@@ -19,174 +8,154 @@ const pug=require('pug')
  * add(tbl,{entries},callback(err))
  * update(tbl,{target},'condition'/{condition},callback(err))
  */
-const dbconfig=path.resolve(global.basedir,'dbconfig.json')
+const path=require('path')
+const sqlite3=require('sqlite3').verbose()
+const db_param=require(path.resolve(__dirname,"db.js"))
+const fs=require('fs')
 
-async function connect(){
-  fs.readFile(dbconfig,(err,data)=>{
+const config=path.resolve(global.basedir,'config.json')
+
+function exit(message){
+  console.log(message)
+  process.exit(1)
+}
+async function getConfig(callback){
+  fs.readFile(config,(err,data)=>{
     if(err)
-      logger.log({level:'error',message:'Failed reading '+dbconfig+' when update '+JSON.stringify(entries)+' with conditions '+cond+' in '+tbl})
-    const db_param=JSON.parse(data)
-    if(!(db_param.user&&db_param.password&&db_param.host&&db_param.port&&db_param.dbname))
-      logger.log({level:'error',message:'dbconfig file could not be parsed to obj containing enough data'})
-    resolve(mysqlx.getSession({user:db_param.user,
-                               password:db_param.password,
-                               host:db_param.host,
-                               port:db_param.port
+      exit('Failed to read configuration file '+config)
+    try{
+      const dbparam=JSON.parse(data)
+      if(!(dbparam.dbpath&&dbparam.dbname&&dbparam.head))
+        throw 'config file does not have enough database info'
+      callback(dbparam)
+    }catch(e){
+      if(e.message)
+        exit(e.message)
+      exit('Failed to read database config from file '+config)
+    }
+  })
+}
+async function connect(callback){
+  getConfig((dbparam)=>{
+    var db=new sqlite3.Database(db_param.dbname,sqlite3.OPEN_READWRITE|sqlite3.OPEN_CREATE,(err)=>{
+      if(err)
+        exit('Failed to connect to SQL database.')
+      callback(db)
+    })
+  })
+}
+async function getTableName(alias,callback){
+  connect((db)=>{
+    getConfig((dbparam)=>{
+      db.serialize(()=>{
+        db.all('SELECT name,alias FROM '+dbparam.head+' WHERE name=\''+alias+'\' OR alias=\''+alias+'\'',(err,rows)=>{
+          if(rows.length<1)
+            exit('Failed to find table with alias '+alias)
+          var result=''
+          for(let row of rows){
+            if(row.name==alias){
+              result=row.name
+              break
+            }else if(row.alias==alias){
+              result=row.name
+            }
+          }
+          if(result)
+            callback(result)
+          else
+            exit('Failed to find the name of Table with alias/name '+alias)
+        })
+          .close()
       })
-    )
+    })
   })
 }
-
+function serializeQuery(row){
+  var keys=Object.keys(row)
+  var vals=Object.values(row)
+  var keystr='('
+  var valstr='('
+  var valobj={}
+  keys.forEach((key)=>{
+    keystr+=key
+    keystr+=','
+    valstr+='$'+key
+    varstr+=','
+    valobj['$'+key]=row[key]
+  })
+  keystr=keystr.slice(0,-1)+')'
+  valstr=valstr.slice(0,-1)+')'
+  return [keystr,valstr,valobj]
+}
+async function insert(tbl,info,callback){
+  getTableName(tbl,(tblname)=>{
+    connect((db)=>{
+      async function insertRow(row,callback){
+        db.serialize(()=>{
+          var [keystr,valstr,valobj]=serializeQuery(row)
+          db.run('INSERT INTO '+tblname+' '+keystr+' VALUES '+valstr,valobj,(err)=>{
+            if(err)
+              exit('Failed to insert into '+tblname+' '+JSON.stringify(row))
+            callback(this.lastID)
+          })
+            .close()
+        })
+      }
+      if(Array.isArray(info)){
+        var lastIDs=[]
+        for(const row of info){
+          await insertRow(row,(lastID)=>{lastIDs.push(lastID)})
+        }
+        callback(lastIDs)
+      }else{
+        insertRow(info,(lastID)=>{callback(lastID)})
+      }
+    })
+  })
+}
 async function update(tbl,entries,cond,callback){
-  fs.readFile(dbconfig,(err,data)=>{
-    if(err)
-      logger.log({level:'error',message:'Failed reading '+dbconfig+' when update '+JSON.stringify(entries)+' with conditions '+cond+' in '+tbl})
-    const db_param=JSON.parse(data)
-    if(!(db_param.user&&db_param.password&&db_param.host&&db_param.port&&db_param.dbname))
-      logger.log({level:'error',message:'dbconfig file could not be parsed to obj containing enough data'})
-    mysqlx.getSession({user:db_param.user,
-                       password:db_param.password,
-                       host:db_param.host,
-                       port:db_param.port
-    })
-    .then((session)=>{
-      let upd=session
-        .getSchema(db_param.dbname)
-        .getTable(tbl)
-        .update(cond)
-      for(const [key,val] of entries.entries()
-        upd.set(key,val)
-      return upd.execute(()=>{
-          return callback(null)
+  getTableName(tbl,(tblname)=>{
+    connect((db)=>{
+      db.serialize(()=>{
+        var [keystr,valstr,valobj]=serializeQuery(entries)
+        var keys=keystr.split(',')
+        var str=''
+        for(const key of keys){
+          str+=key+'=$'+key+','
+        }
+        str.slice(0,-1)
+        db.run('UPDATE '+tblname+' SET '+str+' WHERE '+cond,valobj,(err)=>{
+          if(err)
+            exit('Failed to update '+tblname+' '+JSON.stringify(entries))
+          callback(this.lastID)
         })
-    })
-    .catch((err)=>{
-      return callback(err)
+          .close()
+      })
     })
   })
 }
-async function select(tbl,target,cond,callback){
-  fs.readFile(dbconfig,(err,data)=>{
-    if(err)
-      logger.log({level:'error',message:'Failed reading '+dbconfig+' when select '+JSON.stringify(target)+' with conditions '+cond+' in '+tbl})
-    const db_param=JSON.parse(data)
-    if(!(db_param.user&&db_param.password&&db_param.host&&db_param.port&&db_param.dbname))
-      logger.log({level:'error',message:'dbconfig file could not be parsed to obj containing enough data'})
-    mysqlx.getSession({user:db_param.user,
-                       password:db_param.password,
-                       host:db_param.host,
-                       port:db_param.port
-    })
-    .then((session)=>{
-      return session
-        .getSchema(db_param.dbname)
-        .getTable(tbl)
-        .select(target)
-        .where(cond)
-        .execute((row)=>{
-          return callback(null,row)
+async function select(tbl,target,cond,callback,finish){
+  getTableName(tbl,(tblname)=>{
+    connect((db)=>{
+      db.serialize(()=>{
+        var keystr=''
+        target.forEach((key)=>{
+          keystr+=key+','
         })
-    })
-    .catch((err)=>{
-      return callback(err)
-    })
-  })
-}
-async function addRow(tbl,row,callback){
-  fs.readFile(dbconfig,(err,data)=>{
-    if(err)
-      logger.log({level:'error',message:'Failed reading '+dbconfig+' when add '+JSON.stringify(row)+' to '+tbl})
-    const db_param=JSON.parse(data)
-    if(!(db_param.user&&db_param.password&&db_param.host&&db_param.port&&db_param.dbname))
-      logger.log({level:'error',message:'dbconfig file could not be parsed to obj containing enough data'})
-    mysqlx.getSession({user:db_param.user,
-                       password:db_param.password,
-                       host:db_param.host,
-                       port:db_param.port
-    })
-    .then((session)=>{
-      return session
-        .getSchema(db_param.dbname)
-        .getTable(tbl)
-        .insert(Object.keys(row))
-        .values(Object.values(row))
-        .execute()
-    })
-    .then(()=>{
-      return callback()
-    })
-    .catch((err)=>{
-      return callback(err)
+        keystr.slice(0,-1)
+        db.each('SELECT '+keystr+' FROM '+tblname+' WHERE '+cond,(err,row)=>{
+          if(err)
+            exit('Failed to select '+keystr+' from '+tblname)
+          callback(row)
+        },(err,num)=>{
+          if(err)
+            exit('Selection completed but error occurred when selecting '+keystr+' from '+tblname)
+          finish(num)
+        })
+      })
     })
   })
 }
-
-/* logger
- *
- * debug: verbose when not in production
- * info: things worth storage for future analysis
- * warn: non-blocking error
- * error: fatal error causing service to shutdown
- *
- * Storage:
- * 1. Database: (info) (warn)
- * 2. File: (error)
- * 3: Console: (debug)
- */
-const levels={error:0,
-              warn:1,
-              info:2,
-              debug:3
-}
-// Log transport for writing to database
-//
-// Table: TableLog
-//
-// rowid(INT NOT NULL)
-// level(INT NOT NULL)
-// datetime(TEXT NOT NULL)
-// message(TEXT NOT NULL)
-// request(TEXT)
-// origin(TEXT)
-const Transport=require('winston-transport')
-const util=require('util')
-class MyLogger extends Transport{
-  constructor(opts){
-    super(opts)
-  }
-  log(info,callback){
-    setImmediate(()=>{
-      const lvl=info.level
-      info.level=levels[info.level]
-      if(info.level>2)
-        console.log('['+lvl+'] '+info.message)
-      else if(info.level<1)
-        fs.writeFileSync(errdir,'['+lvl+']'+info.message)
-      else
-        addRow('TableLog',info)
-      if(info.level>2)
-        process.exit()
-    })
-    callback()
-  }
-}
-const logdir=path.resolve(global.basedir,'log')
-const errdir=path.resolve(logdir,'error.log')
-const logger=winston.createLogger({levels:levels,
-                                 format:info_format,
-                                 transports:[
-                                   new MyLogger()
-                                 ],
-                                 exitOnError:true,
-                                 silent:false
-})
-
-const {createLogger,format,transports}=require('winston')
-const {combine,timestamp,label,printf}=format
-const logger={info:winston.createLogger({
-  level:'info',
-  format:winston.format.json()
-})}
 
 function validateSid(sid){
   let db=new sqlite3.Database(db_param.dbname,sqlite3.OPEN_READWRITE|sqlite3.OPEN_CREATE,(err)=>{
@@ -217,7 +186,7 @@ function validateSid(sid){
 /* initiation
  *
  * Check error file
- *   if not accessible, print error and hang
+ *   if not accessible, print error and terminate
  * Check database configuration file
  *   if not present, try create default
  *     if creation failed, throw error
@@ -384,10 +353,7 @@ function findBaseDir(){
 }
 
 module.exports={
-  logger:logger,
-  sql:{select:select,
-       update:update,
-       addRow:addRow},
-  nosql:{},
-  init:init
+  select:select,
+  update:update,
+  insert:insert
 }

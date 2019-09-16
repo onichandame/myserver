@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@mysql/xdevapi": "8.0.17",
     "aes256": "^1.0.4",
     "cookie-parser": "^1.4.4",
     "express": "^4.15.3",
