@@ -79,12 +79,14 @@ $(document).ready(function(){
         '</div>')
         $('form').remove()
         setTimeout(()=>{
-          window.location.replace('/authenticate')
+          window.location.replace(xhr.getResponseHeader('Locationn'))
         },3000)
       }else if(xhr.status==422){
         alert('The password submitted does not satisfy requirement.\n1. 6-16 characters long\n2. contains atleast 1 digit and 1 special character')
       }else if(xhr.status==500){
         alert('Server encountered an internal error.')
+      }else if(xhr.status==401){
+        alert('Input valid! Refresh page or open it again from email')
       }else{
         alert('Unknown error occurred during transmission. Contact the maintainer for help.')
       }
