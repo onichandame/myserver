@@ -1,8 +1,6 @@
 var valid={address:false,
   postfix:false,
-  given_name:false,
-  family_name:false}
-var order=0
+  username:false}
 function update(){
   var flag=true
   for(const i in valid){
@@ -27,7 +25,7 @@ function update(){
     }
   }
   // name field
-  flag=valid.given_name&&valid.family_name
+  flag=valid.username
   if(flag){
     if($('.name~p').length>0){
       $('.name~p').remove()
@@ -54,32 +52,12 @@ $(document).ready(function(){
       valid.postfix=true
     update()
   })
-  $('input[name=given_name]').change(function(){
-    if($('input[name=given_name]').val().length<1)
-      valid.given_name=false
+  $('input[name=username]').change(function(){
+    if($('input[name=username]').val().length<1)
+      valid.username=false
     else
-      valid.given_name=true
+      valid.username=true
     update()
-  })
-  $('input[name=family_name]').change(function(){
-    if($('input[name=family_name]').val().length<1)
-      valid.family_name=false
-    else
-      valid.family_name=true
-    update()
-  })
-
-  // name order
-  $('.swap').click(function(){
-    if(order){
-      order=0
-      $('input[name=given_name').insertAfter($('input[name=family_name'))
-      $('input[name=family_name').insertAfter($('.swap'))
-    }else{
-      order=1
-      $('input[name=family_name').insertAfter($('input[name=given_name'))
-      $('input[name=given_name').insertAfter($('.swap'))
-    }
   })
 
   // Submission
@@ -87,7 +65,7 @@ $(document).ready(function(){
     let xhr=new XMLHttpRequest()
     xhr.open('POST','')
     let email=$('input[name=address').val()+'@'+$('input[name=postfix]').val()
-    let body='given_name='+$('input[name=given_name').val()+'&family_name='+$('input[name=family_name').val()+'&email='+email+'&name_order='+order
+    let body='username='+$('input[name=username').val()+'&email='+email
     xhr.setRequestHeader('Content-Type','application/x-www-form-urlencoded')
     xhr.send(body)
     xhr.onload=function(){
@@ -110,10 +88,3 @@ $(document).ready(function(){
     }
   })
 })
-function invalidateFields(){
-  if($('input[name=username]').length&&$('input[name=username]').val().length<7)
-    return false
-  if($('input[name=email]').length&&!$('input[name=email]').val().includes('@'))
-    return false
-  return true
-}

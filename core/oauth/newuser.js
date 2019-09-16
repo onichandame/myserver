@@ -94,13 +94,22 @@ module.exports=function(req,res,next){
       const {username,email}=req.body
       if(!(username&&email))
         return next({code:400})
-      select('user',['rowid'],'email=\''+email+' OR username=\''+username+'\'',(row)=>{
-        res.set('Location','')
-        return next({code:303})
-      },(num)=>{
-        if(num>0)
+      select('user',['active'],'email=\''+email,(row)=>{
+        if(active>0){
+          res.set('Location','')
           return next({code:303})
-        insert('user',{email:email,username:username,active:0,password:randomstring.generate({length:20,charset:'alphabetic'})},(id)=>{
+        }
+      },(num)=>{
+        if(num>0){
+          update('user',{username:username,password:randomstring:randomstring.generate({length:20,charset:'alphabetic'})},(id)=>{
+            finalize(id)
+          })
+        }else{
+          insert('user',{email:email,username:username,active:0,password:randomstring.generate({length:20,charset:'alphabetic'})},(id)=>{
+            finalize(id)
+          })
+        }
+        function finalize(){
           select('user',['rowid','email','username','password'],'rowid='+id,(row)=>{
             var url=req.protocol+'://'+req.hostname+':8080'+req.path+'?code='+generateJWT({secret:row.password,uid:row.rowid,username:row.username})
             sender(row.username,url,row.email)
@@ -108,7 +117,7 @@ module.exports=function(req,res,next){
             res.locals.page='core/oauth/success.newuser.pug'
             return next()
           })
-        })
+        }
       })
     }
   }
