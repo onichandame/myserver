@@ -1,27 +1,11 @@
 const path=require('path')
-const sign=require('encrypt.js').generateJWT
-const decode=require('encrypt.js').decodeJWT
-async function sendActivationCode(info){
-  var code={}
-  code.email=info.email
-  code.secret=info.secret
-  code.creation_date=info.creation_date
-  code.uid=info.uid
-  const baseurl=info.baseurl
-  const given_name=info.given_name
-  const file=path.resolve(__dirname,'../views/activate.pug')
-  sign(code,(err,result)=>{
-    if(err){
-      console.log('failed signing')
-      console.log(JSON.stringify(err))
-    }else{
-      let text=pug.renderFile(file,{given_name:given_name,
-                                     lk:baseurl+'?code='+result})
-      sendMail('Activate Your Account',info.email,text,(err)=>{
-        if(err)
-          console.log(JSON.stringify(err))
-      })
-    }
+const pug=require('pug')
+const logger=require(__dirname,'logger.js')
+async function sendActivationCode(username,url,email){
+  let text=pug.renderFile(path.resolve(__dirname,'email'+'activate.pug'),{username:username,lk:url})
+  sendMail('Activate Your Account',email,text,(err)=>{
+    if(err)
+      logger.info(err.message ? err,message : 'Failed to send activation code to '+username)
   })
 }
 async function sendApp(info,callback){

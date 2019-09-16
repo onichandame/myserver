@@ -1,9 +1,9 @@
-extends base.pug 
+extends ../base.pug 
 append head
   link(rel="stylesheet",href="/activate.css")
 
 block main
   div
-    h1(class="title") Hi #{given_name}, only 1 more step to create your account
+    h1(class="title") Hi #{username}, only 1 more step to create your account
   div
     a(href=lk,class="body") Click to register

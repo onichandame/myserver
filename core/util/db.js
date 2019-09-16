@@ -1,52 +1,37 @@
 /* Database. Only basic operations without wrapped log utility
  *
- * Roadmap:
- * 1. add/update multiple rows
- * 2. add/update provide lastID to callback
- *
- * select(tbl,[targets],'condition',callback(err,row))
- * add(tbl,{entries},callback(err))
- * update(tbl,{target},'condition'/{condition},callback(err))
+ * select(tbl,[targets],'condition',callback(row),finish(num)
+ * insert(tbl,{info}/[{info}],callback(lastID/[lastIDs]))
+ * update(tbl,{entries},'condition',callback())
  */
 const path=require('path')
 const sqlite3=require('sqlite3').verbose()
 const db_param=require(path.resolve(__dirname,"db.js"))
 const fs=require('fs')
+const {exit,getConfig}=require('base.js')
 
-const config=path.resolve(global.basedir,'config.json')
-
-function exit(message){
-  console.log(message)
-  process.exit(1)
-}
-async function getConfig(callback){
-  fs.readFile(config,(err,data)=>{
-    if(err)
-      exit('Failed to read configuration file '+config)
-    try{
-      const dbparam=JSON.parse(data)
-      if(!(dbparam.dbpath&&dbparam.dbname&&dbparam.head))
-        throw 'config file does not have enough database info'
+async function checkConfig(callback){
+  getConfig((dbparam)=>{
+    if(!(dbparam.dbpath&&dbparam.dbname&&dbparam.head))
+      exit('config file does not have enough database info')
+    else
       callback(dbparam)
-    }catch(e){
-      if(e.message)
-        exit(e.message)
-      exit('Failed to read database config from file '+config)
-    }
   })
 }
 async function connect(callback){
-  getConfig((dbparam)=>{
+  checkConfig((dbparam)=>{
     var db=new sqlite3.Database(db_param.dbname,sqlite3.OPEN_READWRITE|sqlite3.OPEN_CREATE,(err)=>{
       if(err)
         exit('Failed to connect to SQL database.')
-      callback(db)
+      return callback(db)
     })
   })
 }
 async function getTableName(alias,callback){
   connect((db)=>{
-    getConfig((dbparam)=>{
+    checkConfig((dbparam)=>{
+      if(alias==dbparam.head)
+        return callback(alias)
       db.serialize(()=>{
         db.all('SELECT name,alias FROM '+dbparam.head+' WHERE name=\''+alias+'\' OR alias=\''+alias+'\'',(err,rows)=>{
           if(rows.length<1)
@@ -61,11 +46,10 @@ async function getTableName(alias,callback){
             }
           }
           if(result)
-            callback(result)
+            return callback(result)
           else
             exit('Failed to find the name of Table with alias/name '+alias)
         })
-          .close()
       })
     })
   })
@@ -96,9 +80,8 @@ async function insert(tbl,info,callback){
           db.run('INSERT INTO '+tblname+' '+keystr+' VALUES '+valstr,valobj,(err)=>{
             if(err)
               exit('Failed to insert into '+tblname+' '+JSON.stringify(row))
-            callback(this.lastID)
+            return callback(this.lastID)
           })
-            .close()
         })
       }
       if(Array.isArray(info)){
@@ -106,9 +89,9 @@ async function insert(tbl,info,callback){
         for(const row of info){
           await insertRow(row,(lastID)=>{lastIDs.push(lastID)})
         }
-        callback(lastIDs)
+        return callback(lastIDs)
       }else{
-        insertRow(info,(lastID)=>{callback(lastID)})
+        insertRow(info,(lastID)=>{return callback(lastID)})
       }
     })
   })
@@ -127,9 +110,8 @@ async function update(tbl,entries,cond,callback){
         db.run('UPDATE '+tblname+' SET '+str+' WHERE '+cond,valobj,(err)=>{
           if(err)
             exit('Failed to update '+tblname+' '+JSON.stringify(entries))
-          callback(this.lastID)
+          return callback(this.changes)
         })
-          .close()
       })
     })
   })
@@ -146,7 +128,7 @@ async function select(tbl,target,cond,callback,finish){
         db.each('SELECT '+keystr+' FROM '+tblname+' WHERE '+cond,(err,row)=>{
           if(err)
             exit('Failed to select '+keystr+' from '+tblname)
-          callback(row)
+          return callback(row)
         },(err,num)=>{
           if(err)
             exit('Selection completed but error occurred when selecting '+keystr+' from '+tblname)
@@ -157,203 +139,124 @@ async function select(tbl,target,cond,callback,finish){
   })
 }
 
-function validateSid(sid){
-  let db=new sqlite3.Database(db_param.dbname,sqlite3.OPEN_READWRITE|sqlite3.OPEN_CREATE,(err)=>{
-    if(err){
-      return err
-    }
-  })
-  db.serialize(function(){
-    db.each('SELECT uid,creation_date,expired_in FROM '+db_param.tbl.session.name+' WHERE rowid='+sid,(err,row)=>{
-      if(err)
-        return err
-      var cd=row.creation_date
-      const ex=row.expired_in
-      cd.setTime(cd.getTime()+ex)
-      let flag=false
-      if(cd.getTime()<new Date().getTime())
-        flag=false
-      else
-        flag=true
-      if(flag)
-        return row.uid
-      else
-        return flag
+aysnc function addTable(alias,name,cols,callback){
+  checkConfig((dbparam)=>{
+    connect((db)=>{
+      db.serialize(()=>{
+        var str=''
+        for(const key in cols)
+          str+=key+' '+cols[key]
+        str=str.slice(0,-1)
+        db.run('CREATE TABLE IF NOT EXISTS '+name+' '+str,(err)=>{
+          if(err)
+            exit('Failed to create table '+name)
+          insert(dbparam.head,{alias:alias,name:name,cols:JSON.stringify(cols)},(lastID)=>{
+            return callback()
+          })
+        })
+      })
     })
   })
 }
 
-/* initiation
- *
- * Check error file
- *   if not accessible, print error and terminate
- * Check database configuration file
- *   if not present, try create default
- *     if creation failed, throw error
- * Check db tables
- *   if not present, try create empty ones
- *   if present with wrong columns, throw error
- */
-function init(){
-  var info={}
-  info.basedir=true
-  info.errfile=true       // info.errfile: error file accessibility
-  info.dbconfig=true      // info.dbconfig: dbconfig file accessibility and validity
-  info.db=true            // info.db: db connectivity and table validity
-  global.basedir=findBaseDir()
-  // Check base directory(where the main process is located)
-  if(!basedir)
-    exit('Root directory could not be found')
-  // Check log dir
-  try{
-    fs.accessSync(logdir,fs.constants.F_OK|fs.constants.W_OK)
-  }catch(e){
-    error('Log directory '+logdir+' is not accessible')
-  }
-  // Check error log file
-  try{
-    fs.accessSync(errdir,fs.constants.F_OK|fs.constants.W_OK)
-  }catch(e){
-    try{
-      fs.writeFileSync(errdir,'','w')
-      fs.accessSync(errdir,fs.constants.F_OK|fs.constants.W_OK)
-    }catch(er){
-      exit('Failed to open '+errdir+'. '+er.message)
-    }
-  }
-  // Check dbconfig accessibility
-  try{
-    fs.accessSync(dbconfig,fs.constants.F_OK|fs.constants.W_OK)
-  }catch(e){
-    try{
-      fs.writeFileSync(dbconfig,'')
-    }catch(er){
-      exit('dbconfig file '+dbconfig+' not accessible')
-    }
-  }
-  // Check dbconfig validity
-  //
-  // dbname: schema name
-  // user: username for schema
-  // password: password for schema
-  // host: host of database
-  // port: listening port of the database
-  // head: collection name for metadata
-  //       {alias:shortname,
-  //        name:table/collection name,
-  //        type:sql/nosql,
-  //        col:{colname:type} (if sql)
-  //        }
-  //
-  // Check DB validity
-  // 1. Check DB existance
-  // 2. Check Head existance
-  // 3. Check Table/Collection existance/validity
-  try{
-    var dbparam=JSON.parse(fs.readFileSync(dbconfig))
-    if(!(db_param.user&&db_param.password&&db_param.host&&db_param.port&&db_param.dbname&&db_param.head)){
-      fs.writeFileSync(dbconfig,'{"dbname":"HomeSite","user":"homesite","password":"123456","host":"localhost","port":"33060","head":"CollectionMeta"','w')
-      dbparam=JSON.parse(fs.readFileSync(dbconfig))
-    }
-    connect()
-      .then((session)=>{
-        // Check schema. terminate if not accessible
-        var schema=session.getSchema(dbparam.dbname)
-        schema
-          .existsInDatabase()
-          .then((flag)=>{
-            if(flag){
-              resolve(schema)
-            }else{
-              resolve(await session.createSchema(dbparam.dbname)
-                .then((schema)=>{
-                  resolve(schema)
-                })
-                .catch((err)=>{
-                  exit('Failed to create database')
-                })
-              )
-            }
+async function dropTable(name,callback){
+  checkConfig((dbparam)=>{
+    getTableName(name,(tblname)=>{
+      connect((db)=>{
+        db.serialize(()=>{
+          db.run('DROP TABLE IF EXISTS '+tblname,(err)=>{
+            if(err)
+              exit('Failed to drop table '+tblname)
+            db.run('DELETE FROM '+dbparam.head+' WHERE name=\''+tblname+'\'',(err)=>{
+              if(err)
+                exit('Failed to drop record of '+tblname+' from metatable')
+              return callback()
+            })
           })
-          .then((schema)=>{
-            // Check Head
-            var head=schema.getCollection(dbparam.head)
-            head.existsInDatabase()
-              .then((flag)=>{
-                if(flag)
-                  resolve(head)
-                else
-                  resolve(await schema.createCollection(dbparam.head)
-                    .then((colle)=>{
-                      resolve(colle)
-                    })
-                    .catch((err)=>{
-                      exit('Failed to create collection '+dbparam.head)
-                    })
-                  )
-              })
-          })
-          .then((colle)=>{
-            // Check SQL tables
-            colle
-              .find('type="sql"')
-              .execute((doc)=>{
-                if(!(doc.name&&doc.col&&doc.alias))
-                  exit('Inconsistancy found in SQL table '+JSON.stringify(doc))
-                try{
-                  session.sql('SELECT * FROM '+doc.name+' LIMIT 1').execute((row)=>{},(meta)=>{
-                  })
-                }catch(e){
-                  exit('Inconsistancy found in SQL table '+JSON.stringify(doc))
-                }
-              })
-          })
-          .catch((err)=>{
-            exit('Failed to connect to database')
-          })
+        })
       })
-      .catch((err)=>{
-        error('Failed to create session')
-      })
-    function exit(message){
-      console.log(message)
-      process.exit()
-    }
-  }catch(e){
-    error()
-  }
+    })
+  })
 }
-function findBaseDir(){
-  const files=['server.js','package.json']
-  const dirs=['core','node_modules','views']
-  let curdir=__dirname
-  var result=false
-  try{
-    while(!result){
-      let flag=true
-      files.forEach((file)=>{
-        const filename=path.resolve(curdir,file)
-        if(!(fs.existsSync(filename)&&fs.statSync(filename).isFile()))
-          flag=false
+
+async function checkTable(schema,callback){
+  const {name,cols}=schema
+  getTableName(name,(tblname)=>{
+    connect((db)=>{
+      var existingCol=[]
+      db.each('PRAGMA table_info(\''+tblname+'\')',(err,row)=>{
+        if(err)
+          exit('Failed to retrieve table info of '+name)
+        const {name,type,notnull}=row
+        str=type+(notnull ? ' NOT NULL' : '')
+        if(str==cols[name])
+          existingCol.push(name)
+        else
+          exit('Metatable inconsistant with existing table '+tblname)
+      },(err,num)=>{
+        if(err)
+          exit('Failed to iterate all columns of '+name)
+        if(num<1){
+          addTable(schema.alias,name,cols,()=>{
+            return callback(true)
+          })
+        }else{
+          var keys=Object.keys(cols)
+          keys.forEach((key)=>{
+            if(!existingCol[key])
+              return callback(false)
+          })
+          return callback(true)
+        }
       })
-      dirs.forEach((dir)=>{
-        const dirname=path.resole(curdir.dir)
-        if(!(fs.existsSync(dirname)&&fs.statSync(dirname).isDirectory()))
-          flag=false
-      })
-      if(!flag)
-        curdir=path.resolve(curdir,'..')
-      else
-        result=curdir
+    })
+  })
+}
+
+async function initDB(callback){
+  checkConfig((dbparam)=>{
+    try{
+      fs.accessSync(path.resolve(global.basedir,dbparam.dbpath))
+      fs.accessSync(path.resolve(global.basedir,dbparam.dbpath,dbparam.dbname))
+    }catch(e){
+      try{
+        fs.mkdirSync(path.resolve(global.basedir,dbparam.dbpath))
+      }catch(e){
+        exit('Failed to create dbpath')
+      }
     }
-  }catch(e){
-    result=false
-  }
-  return result
+    select(dbparam.head,['cols','name','alias'],'',(row)=>{
+      const cols=JSON.parse(row.cols)
+      const tblname=row.name
+      connect((db)=>{
+        var existingCol=[]
+        db.each('PRAGMA table_info(\''+tblname+'\')',(err,row)=>{
+          if(err)
+            exit('Failed to retrieve table info of '+name)
+          const {name,type,notnull}=row
+          str=type+(notnull ? ' NOT NULL' : '')
+          if(str==cols[name])
+            existingCol.push(name)
+          else
+            exit('Metatable inconsistant with existing table '+tblname)
+        })
+        var keys=Object.keys(cols)
+        keys.forEach((key)=>{
+          if(!existingCol[key])
+            exit(tblname+' does not have column '+key)
+        })
+      })
+    },(num)=>{
+      callback()
+    })
+  })
 }
 
 module.exports={
   select:select,
   update:update,
-  insert:insert
+  insert:insert,
+  dropTable:dropTable,
+  addTable:addTable,
+  initDB:initDB
 }

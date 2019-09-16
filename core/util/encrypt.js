@@ -1,46 +1,112 @@
+/* Handle encryption
+ *
+ * 1. manage encrytion keys
+ * 2. hash string
+ * 3. encode JWT
+ * 4. decode JWT
+ */
 var jwt=require('jsonwebtoken')
 const {SHA3}=require('sha3')
 const fs=require('fs')
+const {exit,getConfig,checkTable}=require(path.resolve(__dirname,'base.js'))
+const randomstring=require('randomstring')
+const {insert,select}=require(path.resolve(__dirname,'db.js'))
+const logger=require(path.resolve(__dirname,'logger.js')).logger
 
-const config_path=path.resolve(__dirname,'config.json')
+async function updateKey(callback){
+  const key=randomstring.generate({length:33,charset:'alphabetic'})
+  insert('encrypt',{key:key,creation_date:new Date().getTime(),expires_in:3600*24*1000},(lastID)=>{
+    callback(key)
+  })
+}
+
+async function getKey(date,callback){
+  if(date){
+    var key=''
+    select('encrypt',['key'],'creation_date<'+date.getTime()+' AND creation_date+expires_in>'date.getTime()+' ORDER BY creation_date ASC',(row)=>{
+      key=row.key
+    },(num)=>{
+      if(num<1)
+        updateKey((key)=>{
+          return callback(key)
+        })
+      else
+        return callback(key)
+    })
+  }else{
+    select('encrypt',['key'],'creation_date<'+new Date().getTime()+' AND creation_date+expires_in>'+new Date().getTime()+' ORDER BY creation_date DESC LIMIT=1'(row)=>{
+      return callback(row.key)
+    },(num)=>{
+      if(num<1)
+        updateKey((key)=>{
+          return callback(key)
+        })
+    })
+  }
+}
 
 async function generateJWT(obj,callback){
-  fs.readFile(config_path,(err,data)=>{
-    const config=JSON.parse(data)
-    const db_key=config.db_key
-    jwt.sign(obj,db_key,{algorithm:'HS256'},(err,result)=>{
+  getKey((key)=>{
+    jwt.sign(obj,key,{algorithm:'HS256'},(err,result)=>{
       if(err)
-        callback(err)
+        return logger.info('Failed to sign JWT for '+JSON.stringify(obj)) && callback(false)
       else
-        callback(err,result)
+        return callback(result)
     })
   })
 }
 
-async function decodeJWT(token,callback){
-  fs.readFile(config_path,(err,data)=>{
-    if(err)
-      console.log(JSON.stringify(err))
-    const config=JSON.parse(data)
-    const db_key=config.db_key
-    jwt.verify(token,db_key,{algorithm:'HS256'},(err,result)=>{
-      if(err){
-        console.log('error occurred')
-        callback(err)
-      }else {
-        callback(null,result)
-      }
+async function decodeJWT(token,date,callback){
+  if(date)
+    getKey(date,(key)=>{
+      output(key)
     })
-  })
+  else
+    getKey((key)={
+      output(key)
+    })
+  function output(key){
+    jwt.verify(token,key,{algorithm:'HS256'},(err,result)=>{
+      if(err)
+        return logger.info('Failed to decode JWT for '+token) && callback(false)
+      else
+        return callback(result)
+    })
+  }
 }
 
-function hashCode(password){
+function hash(password){
   const hash=new SHA3(256)
   hash.update(password)
   return hash.digest('hex')
 }
 
-module.exports={generateJWT:generateJWT,
+async checkConfig(callback){
+  getConfig((param)=>{
+    const enparam=param.encrypt
+    if(!(enparam&&enparam.name&&enparam.cols))
+      exit('Failed to get enough info for encryption from config file')
+    else
+      return callback(enparam)
+
+  })
+}
+
+async function initEncrypt(callback){
+  checkConfig((param)=>{
+    param.alias='encrypt'
+    checkTable(param,(flag)=>{
+      if(flag)
+        return callback()
+      else
+        exit('Failed to create table for encryption')
+    })
+  })
+}
+
+module.exports={
+  generateJWT:generateJWT,
   decodeJWT:decodeJWT,
-  hashCode:hashCode
+  hash:hash,
+  initEncrypt:initEncrypt
 }

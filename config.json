@@ -1,7 +1,15 @@
-{"db_key":"tHarNXwrfxqshuGHWdkdnNwfuUprZvqG",
+{
   "dbpath":"db",
   "dbname":"db.sqlite3",
   "head":"TableHead",
+  "encrypt":{
+    "name":"TableEncrypt",
+    "cols":{
+      "key":"TEXT NOT NULL",
+      "creation_date":"INT NOT NULL",
+      "expires_in":"INT NOT NULL"
+    }
+  },
   "log":{
     "name":"TableLog",
     "cols":{

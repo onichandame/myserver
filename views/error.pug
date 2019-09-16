@@ -3,9 +3,11 @@ block append head
   link(rel="stylesheet",href="/err.css")
 block main
   div(class="info")
-    block title 
-    block descriptioin
+    h1 Error #{code}
+    p(class="sub") #{desc}
   div(class="solution")
-    block solution-title
-      h1 Solution
+    h1 Solution
+    ol(class="sub")
+      each item in sol
+        li= item
     block solution
