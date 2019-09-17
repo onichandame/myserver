@@ -9,11 +9,10 @@ async function sendActivationCode(username,url,email){
   })
 }
 async function sendApp(info,callback){
-  const file=path.resolve(__dirname,'../views/init.app.pug')
-  let text=pug.renderFile(file,info)
+  let text=pug.renderFile(path.resolve(__dirname,'email','newapp.pug'),info)
   sendMail('Your app has been registered',info.email,text,(err)=>{
     if(err)
-      console.log(JSON.stringify(err))
+      logger.info(err.message ? err.message : 'Failed to send app registration details to'+info.username)
   })
 }
 async function sendMail(title,correspondent,text,callback){

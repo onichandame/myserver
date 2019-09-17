@@ -21,17 +21,18 @@ async function setup(){
         alias:'user',name:'TableUser',cols:{
           username:'TEXT NOT NULL',
           email:'TEXT NOT NULL',
-          active:'INT NOT NULL',
+          active:'INT NOT NULL', //0: not active 1: active
           password:'TEXT NOT NULL'
       }},{
         alias:'app',name:'TableApp',cols:{
           name:'TEXT NOT NULL',
           redirect_uri:'TEXT NOT NULL',
           secret:'TEXT NOT NULL',
-          type:'INT NOT NULL'
+          permission:'INT NOT NULL', //0x1: read 0x2: write
+          type:'INT NOT NULL' //0: web 1: native
       }},{
         alias:'appadmin',name:'TableAppAdmin',cols:{
-          level:'INT NOT NULL'
+          level:'INT NOT NULL' // 0: add/modify/delete 1: add
         }}]
   tbls.forEach((tbl)=>{
     checkTable(tbl,(flag)=>{

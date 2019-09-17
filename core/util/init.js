@@ -21,7 +21,7 @@ async function init(callback){
   initDB(()=>{
     initLog(()=>{
       initEncrypt(()=>{
-        callback()
+        return callback()
       })
     })
   })

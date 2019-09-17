@@ -217,7 +217,6 @@ async function initDB(callback){
   checkConfig((dbparam)=>{
     try{
       fs.accessSync(path.resolve(global.basedir,dbparam.dbpath))
-      fs.accessSync(path.resolve(global.basedir,dbparam.dbpath,dbparam.dbname))
     }catch(e){
       try{
         fs.mkdirSync(path.resolve(global.basedir,dbparam.dbpath))
@@ -258,5 +257,6 @@ module.exports={
   insert:insert,
   dropTable:dropTable,
   addTable:addTable,
+  checkTable:checkTable,
   initDB:initDB
 }

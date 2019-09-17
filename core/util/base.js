@@ -1,9 +1,10 @@
+const fs=require('fs')
 function exit(message){
   console.log(message)
   process.exit(1)
 }
 async function getConfig(callback){
-  fs.readFile(config,(err,data)=>{
+  fs.readFile(global.config,(err,data)=>{
     if(err)
       exit('Failed to read configuration file '+config)
     try{

@@ -1,0 +1,14 @@
+extends ../../../views/base.pug 
+append head
+  link(rel="stylesheet",href="/init.app.css")
+
+block main
+  div
+    h1(class="title") Hi #{username}, your app #{name} has successfully been registered.
+  div
+    p(class="body") Here is #{name}'s registration info:
+    ul 
+      li Name: #{name}
+      li Type: #{type}
+      li Redirect URI: #{redirect_uri}
+      li secret: #{secret}

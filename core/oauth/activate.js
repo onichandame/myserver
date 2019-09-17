@@ -30,6 +30,10 @@ module.exports=function(req,res,next){
         if(!(username==row.username&&secret==row.password))
           return next({code:401})
         update('user',{password:hash(pass),active:1},'rowid='+uid,()=>{
+          select('user',['COUNT(rowid) as num'],'active=1',(row)=>{
+            if(row.num==1)
+              insert('appadmin',{level:0,rowid:uid})
+          })
           res.status(200)
           res.set('Location','/authenticate')
           return next()
