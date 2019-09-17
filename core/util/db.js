@@ -215,38 +215,51 @@ async function checkTable(schema,callback){
 
 async function initDB(callback){
   checkConfig((dbparam)=>{
+    console.log('config checked')
     try{
       fs.accessSync(path.resolve(global.basedir,dbparam.dbpath))
+      console.log('dbpath exists')
     }catch(e){
       try{
         fs.mkdirSync(path.resolve(global.basedir,dbparam.dbpath))
+        console.log('dbpath created')
       }catch(e){
         exit('Failed to create dbpath')
       }
     }
-    select(dbparam.head,['cols','name','alias'],'',(row)=>{
-      const cols=JSON.parse(row.cols)
-      const tblname=row.name
-      connect((db)=>{
-        var existingCol=[]
-        db.each('PRAGMA table_info(\''+tblname+'\')',(err,row)=>{
+    connect((db)=>{
+      db.serialize(()=>{
+        console.log('start db')
+        db.run('CREATE TABLE IF NOT EXISTS '+dbparam.head+' (alias TEXT NOT NULL,name NOT NULL,cols NOT NULL',(err)=>{
           if(err)
-            exit('Failed to retrieve table info of '+name)
-          const {name,type,notnull}=row
-          str=type+(notnull ? ' NOT NULL' : '')
-          if(str==cols[name])
-            existingCol.push(name)
-          else
-            exit('Metatable inconsistant with existing table '+tblname)
-        })
-        var keys=Object.keys(cols)
-        keys.forEach((key)=>{
-          if(!existingCol[key])
-            exit(tblname+' does not have column '+key)
+            exit('Failed to create '+dbparam.head)
+          console.log('head created')
+          select(dbparam.head,['cols','name','alias'],'',(row)=>{
+            const cols=JSON.parse(row.cols)
+            const tblname=row.name
+            connect((db)=>{
+              var existingCol=[]
+              db.each('PRAGMA table_info(\''+tblname+'\')',(err,row)=>{
+                if(err)
+                  exit('Failed to retrieve table info of '+name)
+                const {name,type,notnull}=row
+                str=type+(notnull ? ' NOT NULL' : '')
+                if(str==cols[name])
+                  existingCol.push(name)
+                else
+                  exit('Metatable inconsistant with existing table '+tblname)
+              })
+              var keys=Object.keys(cols)
+              keys.forEach((key)=>{
+                if(!existingCol[key])
+                  exit(tblname+' does not have column '+key)
+              })
+            })
+          },(num)=>{
+            callback()
+          })
         })
       })
-    },(num)=>{
-      callback()
     })
   })
 }
