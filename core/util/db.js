@@ -8,7 +8,7 @@ const path=require('path')
 const sqlite3=require('sqlite3').verbose()
 const db_param=require(path.resolve(__dirname,"db.js"))
 const fs=require('fs')
-const {exit,getConfig}=require('base.js')
+const {exit,getConfig}=require(path.resolve(__dirname,'base.js'))
 
 async function checkConfig(callback){
   getConfig((dbparam)=>{
@@ -74,7 +74,7 @@ function serializeQuery(row){
 async function insert(tbl,info,callback){
   getTableName(tbl,(tblname)=>{
     connect((db)=>{
-      async function insertRow(row,callback){
+      function insertRow(row,callback){
         db.serialize(()=>{
           var [keystr,valstr,valobj]=serializeQuery(row)
           db.run('INSERT INTO '+tblname+' '+keystr+' VALUES '+valstr,valobj,(err)=>{
@@ -87,7 +87,7 @@ async function insert(tbl,info,callback){
       if(Array.isArray(info)){
         var lastIDs=[]
         for(const row of info){
-          await insertRow(row,(lastID)=>{lastIDs.push(lastID)})
+          insertRow(row,(lastID)=>{lastIDs.push(lastID)})
         }
         return callback(lastIDs)
       }else{
@@ -139,7 +139,7 @@ async function select(tbl,target,cond,callback,finish){
   })
 }
 
-aysnc function addTable(alias,name,cols,callback){
+async function addTable(alias,name,cols,callback){
   checkConfig((dbparam)=>{
     connect((db)=>{
       db.serialize(()=>{

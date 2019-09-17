@@ -58,7 +58,7 @@ function findBaseDir(){
           flag=false
       })
       dirs.forEach((dir)=>{
-        const dirname=path.resole(curdir.dir)
+        const dirname=path.resolve(curdir,dir)
         if(!(fs.existsSync(dirname)&&fs.statSync(dirname).isDirectory()))
           flag=false
       })
@@ -68,6 +68,7 @@ function findBaseDir(){
         result=curdir
     }
   }catch(e){
+    console.log(e.message)
     result=false
   }
   return result

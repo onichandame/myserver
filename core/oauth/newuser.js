@@ -6,7 +6,7 @@
  * browser receives the status code and displays the message
  */
 const path=require('path')
-const {select,insert,update}=require(path.resolve(__dirname,'..','db.js'))
+const {select,insert,update}=require(path.resolve(__dirname,'..','util','db.js'))
 const subpath=path.resolve('core','oauth')
 const randomstring=require('randomstring')
 const sender=require(path.resolve(__dirname,'..','util','mail.js')).sendActivationCode
@@ -101,7 +101,7 @@ module.exports=function(req,res,next){
         }
       },(num)=>{
         if(num>0){
-          update('user',{username:username,password:randomstring:randomstring.generate({length:20,charset:'alphabetic'})},(id)=>{
+          update('user',{username:username,password:randomstring.generate({length:20,charset:'alphabetic'})},(id)=>{
             finalize(id)
           })
         }else{
@@ -109,7 +109,7 @@ module.exports=function(req,res,next){
             finalize(id)
           })
         }
-        function finalize(){
+        function finalize(id){
           select('user',['rowid','email','username','password'],'rowid='+id,(row)=>{
             var url=req.protocol+'://'+req.hostname+':8080'+req.path+'?code='+generateJWT({secret:row.password,uid:row.rowid,username:row.username})
             sender(row.username,url,row.email)

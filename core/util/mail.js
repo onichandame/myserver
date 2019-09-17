@@ -1,11 +1,11 @@
 const path=require('path')
 const pug=require('pug')
-const logger=require(__dirname,'logger.js')
+const {logger}=require(path.resolve(__dirname,'logger.js'))
 async function sendActivationCode(username,url,email){
   let text=pug.renderFile(path.resolve(__dirname,'email'+'activate.pug'),{username:username,lk:url})
   sendMail('Activate Your Account',email,text,(err)=>{
     if(err)
-      logger.info(err.message ? err,message : 'Failed to send activation code to '+username)
+      logger.info(err.message ? err.message : 'Failed to send activation code to '+username)
   })
 }
 async function sendApp(info,callback){

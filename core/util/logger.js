@@ -1,6 +1,7 @@
 const path=require('path')
 const fs=require('fs')
 const Transport=require('winston-transport')
+const winston=require('winston')
 const util=require('util')
 const {exit,getConfig}=require(path.resolve(__dirname,'base.js'))
 const {select,addTable,checkTable,dropTable}=require(path.resolve(__dirname,'db.js'))

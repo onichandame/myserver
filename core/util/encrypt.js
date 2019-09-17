@@ -6,6 +6,7 @@
  * 4. decode JWT
  */
 var jwt=require('jsonwebtoken')
+const path=require('path')
 const {SHA3}=require('sha3')
 const fs=require('fs')
 const {exit,getConfig,checkTable}=require(path.resolve(__dirname,'base.js'))
@@ -15,7 +16,7 @@ const logger=require(path.resolve(__dirname,'logger.js')).logger
 
 async function updateKey(callback){
   const key=randomstring.generate({length:33,charset:'alphabetic'})
-  insert('encrypt',{key:key,creation_date:new Date().getTime(),expires_in:3600*24*1000},(lastID)=>{
+  insert('encrypt',{key:key,creation_date:new Date().getTime()/1000,expires_in:3600*24},(lastID)=>{
     callback(key)
   })
 }
@@ -23,7 +24,7 @@ async function updateKey(callback){
 async function getKey(date,callback){
   if(date){
     var key=''
-    select('encrypt',['key'],'creation_date<'+date.getTime()+' AND creation_date+expires_in>'date.getTime()+' ORDER BY creation_date ASC',(row)=>{
+    select('encrypt',['key'],'creation_date<'+date.getTime()/1000+' AND creation_date+expires_in>'+date.getTime()/1000+' ORDER BY creation_date ASC',(row)=>{
       key=row.key
     },(num)=>{
       if(num<1)
@@ -34,7 +35,7 @@ async function getKey(date,callback){
         return callback(key)
     })
   }else{
-    select('encrypt',['key'],'creation_date<'+new Date().getTime()+' AND creation_date+expires_in>'+new Date().getTime()+' ORDER BY creation_date DESC LIMIT=1'(row)=>{
+    select('encrypt',['key'],'creation_date<'+new Date().getTime()/1000+' AND creation_date+expires_in>'+new Date().getTime()/1000+' ORDER BY creation_date DESC LIMIT=1',(row)=>{
       return callback(row.key)
     },(num)=>{
       if(num<1)
@@ -62,7 +63,7 @@ async function decodeJWT(token,date,callback){
       output(key)
     })
   else
-    getKey((key)={
+    getKey((key)=>{
       output(key)
     })
   function output(key){
@@ -81,7 +82,7 @@ function hash(password){
   return hash.digest('hex')
 }
 
-async checkConfig(callback){
+async function checkConfig(callback){
   getConfig((param)=>{
     const enparam=param.encrypt
     if(!(enparam&&enparam.name&&enparam.cols))

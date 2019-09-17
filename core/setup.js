@@ -14,7 +14,7 @@
  */
 const path=require('path')
 const {checkTable}=require(path.resolve(__dirname,'util','db.js'))
-const logger=require(path.resolve(__dirname,'util','logger.js'))
+const {logger}=require(path.resolve(__dirname,'util','logger.js'))
 async function setup(){
   const tbls=[
     {

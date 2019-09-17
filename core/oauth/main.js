@@ -10,6 +10,6 @@ router.all('/authenticate',require(path.resolve(__dirname,'authenticate.js')))
 
 router.all('/activate',require(path.resolve(__dirname,'activate.js')))
 
-router.all('/newapp',require(path.resolve(__dirname,'newap.js')))
+router.all('/newapp',require(path.resolve(__dirname,'newapp.js')))
 
 module.exports=router

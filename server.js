@@ -65,7 +65,7 @@ app.listen(port, function (){
   console.log('Listening on port 8080!')
 })
 
-function initiate(){
+async function initiate(){
   await init()
   await setup()
 }

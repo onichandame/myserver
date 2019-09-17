@@ -2,7 +2,7 @@
  */
 const path=require('path')
 const fs=require('fs')
-const logger=require(path.resolve(__dirname,'..','core','util','logger.js'))
+const {logger}=require(path.resolve(__dirname,'..','util','logger.js'))
 
 const dfterrdesc={code:500,
   desc:'Internal error in server',
@@ -27,8 +27,7 @@ function stderr(err,req,res){
     try{
       tmp=JSON.parse(data)
       res.xhr ? res.send() : 
-                res.render('error.pug',(res.status in tmp ? {code:res.status,desc:tmp[res.status].description.sol:tmp[res.status].solution} : dfterrdesc))
-      }
+                res.render('error.pug',(res.status in tmp ? {code:res.status,desc:tmp[res.status].description,sol:tmp[res.status].solution} : dfterrdesc))
     }catch(e){
       logger.error('Failed to parse JSON from errdesc')
     }

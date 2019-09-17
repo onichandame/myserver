@@ -1,63 +1,55 @@
+/* handles 2 methods:
+ * 1. GET: displays login form
+ * 2. POST: authenticate user and set cookies & sessions
+ *
+ * post-authenticate process varies based on response_type
+ * 1. code: redirect_uri?code=***
+ * 2. token: redirect_uri#token=***
+ *
+ * Roadmap:
+ * 1. support more oauth type
+ */
 const path=require('path')
-const db_param=require(path.resolve(__dirname,"db.js"))
-const sqlite3=require('sqlite3').verbose()
-const hash=require(path.resolve(__dirname,'util.js')).hashCode
+const randomstring=require('randomstring')
+const {insert,select}=require(path.resolve(__dirname,'..','util','db.js'))
+const {generateJWT,hash}=require(path.resolve(__dirname,'..','util','encrypt.js'))
 module.exports=function(req,res,next){
-  let db=new sqlite3.Database(db_param.dbname,sqlite3.OPEN_READWRITE|sqlite3.OPEN_CREATE,(err)=>{
-    if(err){
-      return next({code:500})
-    }
-  })
   if(req.method=='GET'){
     res.status(200)
-    res.render('authenticate.pug')
+    res.render('core/oauth/authenticate.pug')
   }else if(req.method=='POST'){
-    const email=req.body.email
-    const pass=req.body.pass
-    console.log(email)
-    console.log(pass)
+    const {email,pass}=req.body
+    const {response_type,client_id,redirect_uri,scope}=req.query
     var valid=false
-    //Auth code flow
-    if(req.query.response_type=='code'){
+    if(response_type=='code'){
+      //Auth code flow
+    }else if(response_type=='token'){
       //Implicit flow
-    }else if(req.query.response_type=='token'){
-      //No oauth flow
     }else{
-      var first=false
-      db.serialize(function(){
-        db.get('SELECT COUNT(rowid) as num FROM '+db_param.tbl.user.name+' WHERE active=1',(err,row)=>{
-          if(err)
-            return next({code:500})
-          if(row.num==1)
-            first=true
-          else 
-            first=false
-        })
-        .each('SELECT password,rowid FROM '+db_param.tbl.user.name+' WHERE email=\''+email+'\'',(err,row)=>{
-          if(err)
-            return next({code:500})
-          if(hash(pass)==row.password)
-            valid=true
-          else
-            valid=false
-          if(valid){
-            db.serialize(function(){
-              db.run('INSERT INTO '+db_param.tbl.session.name+' (creation_date,expired_in,uid) VALUES ($creation_date,$expired_in,$uid)',{$creation_date:new Date().toString(),$expired_in:3600,$uid:row.rowid},(err)=>{
-                if(err)
-                  return next({code:500})
-                res.cookie('sid',this.lastID)
-                if(first){
-                  res.status(302)
-                  res.send()
-                }else{
-                  res.status(200)
-                  res.send()
-                }
-              })
-            })
+      //No oauth flow
+      var info={}
+      select('user',['rowid','password','email','username'],'email=\''+email+' OR username=\''+email+'\'',(row)=>{
+        if(hash(pass)==row.password)
+          if(!info){
+            info.username=row.username
+            info.email=row.email
+            info.uid=row.rowid
           }else{
-            return next({code:401})
+            if(row.email==email)
+              info={email:row.email,username:row.username,uid:row.rowid}
           }
+      },(num)=>{
+        if(num<1)
+          return next({code:401})
+        generateJWT(info,(result)=>{
+          if(!result)
+            return next({code:500})
+          var exp=new Date()
+          exp.setSeconds(exp.getSeconds()+24*3600)
+          res.cookie('sid',result,{path:'/',expires:exp})
+          res.cookie('dat',new Date().getTime(),{path:'/',expires:exp})
+          res.status(200)
+          return next()
         })
       })
     }
