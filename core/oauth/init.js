@@ -1,4 +1,4 @@
-/* Setup DB for oauth and home services
+/* Setup DB for oauth
  *
  * user
  * - username
@@ -13,9 +13,9 @@
  * - type
  */
 const path=require('path')
-const {checkTable}=require(path.resolve(__dirname,'util','db.js'))
-const {logger}=require(path.resolve(__dirname,'util','logger.js'))
-async function setup(){
+const {checkTable}=require(path.resolve(global.basedir,'core','util','db.js'))
+const {logger}=require(path.resolve(global.basedir,'core','util','logger.js'))
+async function init(){
   const tbls=[
     {
         alias:'user',name:'TableUser',cols:{
@@ -42,4 +42,4 @@ async function setup(){
   })
 }
 
-module.exports=setup
+module.exports=init

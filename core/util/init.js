@@ -18,13 +18,13 @@ const {initEncrypt}=require(path.resolve(__dirname,'encrypt.js'))
 
 async function init(callback){
   initGlobalDir()
+  const init=require(path.resolve(global.basedir,'core','oauth','init.js'))
   initDB(()=>{
-    console.log('db init')
     initLog(()=>{
-      console.log('log init')
       initEncrypt(()=>{
-        console.log('encrypt init')
-        return callback()
+        init(()=>{
+          return callback()
+        })
       })
     })
   })

@@ -7,7 +7,6 @@ const app = express()
 const port = 8080
 const cookieParser=require('cookie-parser')
 const init=require(path.resolve(__dirname,'core','util','init.js'))
-const setup=require(path.resolve(__dirname,'core','setup.js'))
 
 app.set('views','views')
 app.set('view engine','pug')
@@ -17,13 +16,17 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended: false}))
 app.use(cookieParser())
 
-initiate()
-
-app.use('/oauth',require(path.resolve(__dirname,'core','oauth','main.js')))
-
-app.use('/app',require(path.resolve(__dirname,'app','main.js')))
-
-app.use('/',require(path.resolve(__dirname,'core','home','main.js')))
+init(()=>{
+  app.use('/oauth',require(path.resolve(__dirname,'core','oauth','main.js')))
+  
+  app.use('/app',require(path.resolve(__dirname,'app','main.js')))
+  
+  app.use('/',require(path.resolve(__dirname,'core','home','main.js')))
+  
+  app.listen(port, function (){
+    console.log('Listening on port 8080!')
+  })
+})
 
 /*
 app.get('/video', function(req, res) {
@@ -60,12 +63,3 @@ app.get('/video', function(req, res) {
   }
 })
 */
-
-app.listen(port, function (){
-  console.log('Listening on port 8080!')
-})
-
-async function initiate(){
-  await init()
-  await setup()
-}
