@@ -2,11 +2,11 @@ const express = require('express')
 const path = require('path')
 var router=express.Router()
 
-router.all('/about',(req,res,next)=>{
+router.get('/about',(req,res,next)=>{
   res.render('about.pug')
 })
 
-router.use('/',(req,res,next)=>{
+router.get('/',(req,res,next)=>{
   res.render('home.pug')
 })
 
