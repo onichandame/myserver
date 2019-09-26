@@ -4,13 +4,25 @@ This is a a website hosting personal data and app data. This site is mainly for 
 Xiao Zhang
 
 # Design
-
-The main function of this website is to host oauth API. Therefore the whole structure is based on the server side of the Server/Client architecture.
+The main function of this website is my personal homepage.
 
 # UI
 The homepage is shown below.
 ![home](doc/home.png)
 
+The left panel is for my personal information. The static content include an avatar, name and title. These are grouped on the top half. The dynamic contents are my experiences. Each experience is grouped in 1 block. On collapse, only the title and the main objective are shown. On expansion, the achievements are shown. The dynamic part can scroll up and down.
+
+The main part of the page is dyed dark. Below the welcome message is the showcase part. Each item is grouped into 1 card. 2 cards are aligned in 1 row. The background of the cards should also be black. The main part can be scrolled up and down as a whole.
+
+Above all is navbar. The homepage is displayed above. The about page displays contact info and legal announcement of this website. The App tab should have its own page displaying all the apps hosted on this site.
+
+The homepage mainly serves 3 static pages. Home being the above, About below and App in the end of this section.
+
+![about](doc/about.png)
+
+![app](doc/app.png)
+
+The components in home and about pages are served statically but the app page is dynamically displayed.
 ## Data Flow
 
 The overall connection is show below
