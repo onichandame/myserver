@@ -6,16 +6,17 @@ block main
   div(class="row")
     div(class="col-xs-12 col-lg-2 text-center",id="profile")
       div(id="headline")
-        img(src="/image/avatar.jpg")
+        img(src="/avatar.jpg")
         h3 Xiao Zhang
         p Physicist & Programmer
       div(class="text-left",id="experience")
     div(class="col-xs-12 col-lg-10")
-      div(id="welcome")
-        div(class="text-center")
-          h1 Welcome
-          h3 Thans for stopping by. Here you can find some work I've done.
+      div(class="col-xs-12 text-center",id="welcome")
+        div(class="welcome-text")
+          h1(style="margin-bottom:3rem;") Welcome
+          h3 Thanks for stopping by. Here you can find some work I've done.
       div(id="projects")
 append script
   script(src="/home.js")
   script(src="/experience.js")
+  script(src="projects.js")
