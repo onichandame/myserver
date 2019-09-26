@@ -7,6 +7,10 @@ Xiao Zhang
 
 The main function of this website is to host oauth API. Therefore the whole structure is based on the server side of the Server/Client architecture.
 
+# UI
+The homepage is shown below.
+![home](doc/home.png)
+
 ## Data Flow
 
 The overall connection is show below
