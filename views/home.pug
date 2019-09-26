@@ -1,7 +1,21 @@
 extends main.pug
 
+append head
+  link(rel="stylesheet",href="/home.css")
 block main
-  div(class="col-lg-2 x-background")
-    img(class="x-avatar")
-  div(class="col-lg-10")
-  script(src="/home-avatar.js")
+  div(class="row")
+    div(class="col-xs-12 col-lg-2 text-center",id="profile")
+      div(id="headline")
+        img(src="/image/avatar.jpg")
+        h3 Xiao Zhang
+        p Physicist & Programmer
+      div(class="text-left",id="experience")
+    div(class="col-xs-12 col-lg-10")
+      div(id="welcome")
+        div(class="text-center")
+          h1 Welcome
+          h3 Thans for stopping by. Here you can find some work I've done.
+      div(id="projects")
+append script
+  script(src="/home.js")
+  script(src="/experience.js")

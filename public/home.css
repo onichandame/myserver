@@ -1,0 +1,44 @@
+#profile{
+  padding-left:auto;
+  padding-right:auto;
+  padding-top:2rem;
+  padding-bottom:2rem;
+  display:flex;
+  flex-flow:column;
+}
+#profile img{
+  width:50%;
+  border-radius:50%;
+  padding-top:3rem;
+  padding-bottom:3rem;
+}
+#experience{
+  overflow:scroll;
+  flex-grow:1;
+}
+::-webkit-scrollbar {
+    width: 0px;
+    background: transparent; /* make scrollbar transparent */
+}
+#experience ul{
+  font-size:1.2rem;
+  list-style-type:square;
+}
+#experience ul li{
+  font-size:1rem;
+}
+#welcome{
+  background-color:#ffffff;
+  background-image:url("/home.jpg");
+  background-color: #cccccc;
+  height: 500px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  position: relative;
+}
+#welcome div{
+  text-align:bottom;
+  position:absolute;
+  bottom:0;
+}

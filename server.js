@@ -16,6 +16,11 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended: false}))
 app.use(cookieParser())
 
+app.get('/',(req,res)=>{res.render('home.pug')})
+app.listen(port, function (){
+  console.log('Listening on port 8080!')
+})
+/*
 init(()=>{
   app.use('/oauth',require(path.resolve(__dirname,'core','oauth','main.js')))
   
@@ -28,7 +33,6 @@ init(()=>{
   })
 })
 
-/*
 app.get('/video', function(req, res) {
   const path = 'assets/sample.mp4'
   const stat = fs.statSync(path)

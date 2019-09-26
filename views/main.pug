@@ -1,41 +1,19 @@
 extends base.pug
 
+append head
+  link(rel="stylesheet",href="/main.css")
+  link(rel="stylesheet",href="/overbar.css")
 block overbar
   header
-    nav(class="navbar navbar-expand-lg x-navbar")
-      a(class="navbar-brand x-navbar",href="/") Home
-      button(class="navbar-toggler",type="button",data-toggle="collapse",data-target="#overbar",aria-controls="overbar",aria-expanded="false",aria-label="Show Top-bar")
-        span(class="navbar-toggler-icon")
-      div(class="collapse navbar-collapse",id="overbar")
-        ul(class="navbar-nav mr-auto")
-          li(class="nav-item")
-            a(class="nav-link x-navbar",href="/app") Apps
-          li(class="nav-item")
-            a(class="nav-link x-navbar",href="/about") About
-          if auth.scope>0
-            li(class="nav-item dropdown")
-              a(href="#",class="nav-link dropdown-toggle x-navbar",data-toggle="dropdown",aria-haspopup="true",aria-expanded="false") Gallery
-                span(class="caret")
-              ul(class="dropdown-menu bg-dark")
-                li
-                  a(class="nav-link text-white",href="/documents") Documents
-                li(role="separator",class="divider")
-                li
-                  a(class="nav-link text-white",href="/camera") DCIM
-                li(role="separator",class="divider")
-                li
-                  a(class="nav-link text-white",href="/videos") Videos
-        div(class="dropdown-divider")
-        ul(class="nav navbar-nav navbar-right")
-          li(class="dropdown")
-            if auth.scope<0
-              a(class="nav-link x-navbar",role="button",href="/auth") Login
-            else
-              a(href="#",class="nav-link dropdown-toggle x-navbar",data-toggle="dropdown",role="button",aria-haspopup="true",aria-expanded="false") Account
-              span(class="caret")
-            ul(class="dropdown-menu bg-dark")
-              li
-                a(class="nav-link x-navbar",href="/profile") Profile
-              li(role="separator",class="divider")
-              li
-                a(class="nav-link x-navbar",href="/logout") Log out
+    ul(class="col-xs-12 overbar")
+      li(id="home")
+        a(class="active",href="/") Home
+      li(id="apps")
+        a(class="dropdown",href="/apps") Apps
+      li(id="about") 
+        a(href="/about") About
+      li(id="user")
+        a(class="dropdown",href="#") Account
+block script
+  script(src="/user.js")
+  script(src="/apps.js")
