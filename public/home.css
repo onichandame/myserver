@@ -38,9 +38,12 @@
 .welcome-text{
   font-size:1.5rem;
 }
-#projects .card{
+.card{
+  height:20rem;
+  width:15rem;
   background-color:#999999;
 }
-#projects .card .card-img-top{
-  background-color:#222222;
+.card .card-img-top{
+  height:15rem;
+  width:15rem;
 }

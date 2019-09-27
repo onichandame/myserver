@@ -11,12 +11,19 @@ $(document).ready(function(){
 function updatepro(str){
   try{
     var pro=JSON.parse(str)
+    const parent=$('#projects').outerWidth()
+    var current=parent
     pro.forEach((item)=>{
-      $('#projects').append(additem(item))
+      if(current>=parent){
+        $('#projects').append('<div class="row"></div>')
+        current=0
+      }
+      $('#projects .row:last-child').append(additem(item))
+      current+=$('#projects .row:last-child .card:last-child').outerWidth()
     })
   }catch(e){
   }
 }
 function additem(pro){
-  return '<a class="col-xs-12 col-lg-6 card" href="'+pro.link+'"><img class="card-img-top" src="'+pro.icon+'"><div class="card-body"><h5 class="card-title">'+pro.title+'</h5><p class="card-title">'+pro.desc+'</p></div></a>'
+  return '<div class="col-xs-12 col-lg-6 justify-content-center"><a class="card" href="'+pro.link+'"><img class="card-img-top" src="'+pro.icon+'"><div class="card-body"><h5 class="card-title">'+pro.title+'</h5><p class="card-title">'+pro.desc+'</p></div></a></div>'
 }

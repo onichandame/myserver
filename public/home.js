@@ -9,7 +9,7 @@ function adjustcanvas(){
   const welcome=$('#welcome').outerHeight()
   var p=total-overbar
   $('#home').css('height',p)
-  $('#cvs').css('height',p)
+  $('#projects').css('height',p)
   p=p-headline
   $('#experience').css('height',p)
 
