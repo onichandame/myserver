@@ -1,14 +1,14 @@
-const file='experience.json'
 $(document).ready(function(){
+  const fileexp='experience.json'
   let xhr=new XMLHttpRequest()
-  xhr.open('GET','/'+file)
+  xhr.open('GET','/'+fileexp)
   xhr.send()
   xhr.onload=function(){
     if(xhr.status==200)
-      update(xhr.responseText)
+      updateexp(xhr.responseText)
   }
 })
-function update(str){
+function updateexp(str){
   try{
     var exp=JSON.parse(str)
     exp.forEach((item)=>{

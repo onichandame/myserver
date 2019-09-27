@@ -46,3 +46,22 @@
   left:50%;
   transform:translate(-50%,-50%);
 }
+#cvs{
+  padding-left:auto;
+  padding-right:auto;
+  padding-top:2rem;
+  padding-bottom:2rem;
+  display:flex;
+  flex-flow:column;
+}
+#projects{
+  margin-top:5rem;
+  overflow:scroll;
+  flex-grow:1;
+  align-items:center;
+  justify-content:center;
+  margin-left:5%;
+  margin-right:5%;
+}
+#projects .card{
+}
