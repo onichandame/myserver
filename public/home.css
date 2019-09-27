@@ -1,14 +1,4 @@
-#profile{
-  padding-left:auto;
-  padding-right:auto;
-  padding-top:2rem;
-  padding-bottom:2rem;
-  display:flex;
-  flex-flow:column;
-}
-#profile img{
-  width:50%;
-  border-radius:50%;
+#headline{
   padding-top:3rem;
   padding-bottom:3rem;
 }
@@ -20,9 +10,12 @@
   margin-left:5%;
   margin-right:5%;
 }
-::-webkit-scrollbar {
-    width: 0px;
-    background: transparent; /* make scrollbar transparent */
+#experience.overflow-auto::-webkit-scrollbar {
+    width: 10px;
+    background: #222222; /* make scrollbar transparent */
+}
+#experience.overflow-auto::-webkit-scrollbar-thumb {
+  background:#999999;
 }
 #experience ul{
   font-size:1.2rem;
@@ -31,37 +24,23 @@
 #experience ul li{
   font-size:1rem;
 }
-#welcome{
-  background-image:url("home.jpg");
-  height:500px;
-  background-size:cover;
-  background-repeat:no-repeat;
-  background-position:center;
+#projects.overflow-auto::-webkit-scrollbar {
+    width: 0;
+    background: transparent; /* make scrollbar transparent */
+}
+.welcome{
   position:relative;
+  text-align:center;
+}
+.welcome-title{
+  font-size:2rem;
 }
 .welcome-text{
-  text-align:center;
-  position:absolute;
-  top:95%;
-  left:50%;
-  transform:translate(-50%,-50%);
-}
-#cvs{
-  padding-left:auto;
-  padding-right:auto;
-  padding-top:2rem;
-  padding-bottom:2rem;
-  display:flex;
-  flex-flow:column;
-}
-#projects{
-  margin-top:5rem;
-  overflow:scroll;
-  flex-grow:1;
-  align-items:center;
-  justify-content:center;
-  margin-left:5%;
-  margin-right:5%;
+  font-size:1.5rem;
 }
 #projects .card{
+  background-color:#999999;
+}
+#projects .card .card-img-top{
+  background-color:#222222;
 }

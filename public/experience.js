@@ -12,14 +12,19 @@ function updateexp(str){
   try{
     var exp=JSON.parse(str)
     exp.forEach((item)=>{
-      $('#experience').append('<h5>'+item.title+', '+item.corp+'</h5>')
-      $('#experience').append('<p>'+item.desc+'</p>')
-      $('#experience').append('<ul></ul>')
-      $('#experience').append('<ul>Achievements</ul>')
-      item.achievements.forEach((exp)=>{
-        $('#experience ul:last-child').append('<li>'+exp+'</li>')
-      })
+      $('#experience').append(addexp(item))
     })
   }catch(e){
   }
+}
+function addexp(item){
+  var result='<h5>'+item.title+', '+item.corp+'</h5>'+
+    '<p>'+item.desc+'</p>'+
+    '<h5>Achievements</h5>'+
+    '<ul>'
+  item.achievements.forEach((exp)=>{
+    result+='<li>'+exp+'</li>'
+  })
+  result+='</ul>'
+  return result
 }

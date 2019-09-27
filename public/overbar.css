@@ -1,34 +1,7 @@
-ul.overbar{
-  list-style-type:none;
-  margin:0;
-  padding:0;
-  overflow:hidden;
+.navbar-dark{
   background-color:#222222;
-}
-ul.overbar li a{
-  display:block;
   color:#999999;
-  text-align:center;
-  padding:.6rem 3rem .6rem 3rem;
-  text-decoration:none;
 }
-ul.overbar li:first-of-type a{
-  font-size:1.2rem;
-}
-ul.overbar li{
-  float:left;
-}
-.overbar li a.active{
+.nav-item:hover{
   background-color:#000000;
-}
-ul.overbar a:hover:not(.active){
-  color:#999999;
-  background-color:#000000;
-}
-.dropdown::after{
-  content:"   ▼";
-  font-size:.7rem;
-}
-#user{
-  float:right;
 }
