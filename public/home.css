@@ -38,12 +38,24 @@
 .welcome-text{
   font-size:1.5rem;
 }
+.grid{
+  margin:0 auto;
+  text-align:center;
+}
+.grid li{
+  display:inline-block;
+  vertical-align:top;
+}
 .card{
-  height:20rem;
-  width:15rem;
-  background-color:#999999;
+  height:30rem;
+  width:20rem;
+  background-color:#000000;
 }
 .card .card-img-top{
-  height:15rem;
-  width:15rem;
+  height:20rem;
+  width:20rem;
+}
+.card-body *{
+  color:#ffffff;
+  text-align:left;
 }
