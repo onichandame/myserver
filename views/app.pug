@@ -1,0 +1,11 @@
+extends main.pug
+append head
+  link(type="stylesheet",href="/app.css")
+block main
+  div(class="apps")
+    ul(class="grid")
+  div(class="apps-reg")
+    a(class="nav-link",href="#") Register your own link
+append script
+  script(src="/app.js")
+  script(src="/apps.js")

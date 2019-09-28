@@ -1,0 +1,25 @@
+.apps.overflow-auto::-webkit-scrollbar {
+    width: 10px;
+    background: #222222; /* make scrollbar transparent */
+}
+.apps.overflow-auto::-webkit-scrollbar-thumb {
+  background:#999999;
+}
+.grid{
+  margin:0 auto;
+  text-align:center;
+}
+.grid li{
+  display:inline-block;
+  vertical-align:top;
+}
+.apps-reg{
+  text-align:left;
+}
+.apps-reg a{
+  font-size:1.5rem;
+  color:#ffffff;
+}
+.apps-reg a:hover{
+  color:#0000ff;
+}

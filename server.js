@@ -18,6 +18,7 @@ app.use(cookieParser())
 
 app.get('/',(req,res)=>{res.render('home.pug')})
 app.get('/about',(req,res)=>{res.render('about.pug')})
+app.get('/app',(req,res)=>{res.render('app.pug')})
 app.listen(port, function (){
   console.log('Listening on port 8080!')
 })
