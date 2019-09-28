@@ -1,0 +1,21 @@
+extends main.pug 
+
+append head
+  link(rel="stylesheet",href="about.css")
+block main
+  div(class="container-fluid")
+    div(class="row vdivider")
+      div(class="col-xs-6 col-lg-2")
+        div(class="info")
+          h3 Contact
+          p E-mail: zxinmyth@gmail.com
+          p Mobile: +86 13924338335
+        div(class="info")
+          h3 Legal Issues
+          p All resources used in this website are from the internet. They are used solely within this website and not sold or given to any third party. If you are the creator of any image/video/font/music found on this website, and you feel it necessary to abstain the usage of your work on this website, please contact me immediately.
+      div(class="col-xs-6 col-lg-10",style="padding-left:5rem;")
+        div(class="info")
+          h3 This Website
+          p is made only for me learning Node.js. During the study, many open source communities helped me a lot. Therefore I feel it right to contribute to the open-source community, even for a tiny amount. The source of this website is hosted on <a href="https://github.com/onichandame/personalweb">Github</a> and everyone is welcomed to use it.
+append script
+  script(src="about.js")
