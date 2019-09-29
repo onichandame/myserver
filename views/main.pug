@@ -14,12 +14,14 @@ block overbar
           li(class="nav-item home")
             a(class="nav-link",href="/") Home
           li(class="nav-item app dropdown")
-            a(class="nav-link",href="/app") App ▼
+            a(class="nav-link dropdown-toggle",id="appd",data-toggle="dropdown" aria-haspopup="true",aria-expanded="false",aria-label="expand",href="#") App
+            div(class="dropdown-menu",aria-labelledby="appd")
           li(class="nav-item about")
             a(class="nav-link",href="/about") About
         ul(class="nav navbar-nav navbar-right")
-          li
-            a(class="nav-item") Account ▼
+          li(class="nav-item user dropdown")
+            a(class="nav-link dropdown-toggle",id="userd",data-toggle="dropdown" aria-haspopup="true",aria-expanded="false",aria-label="expand",href="#") Account
+            div(class="dropdown-menu",aria-labelledby="userd")
 block script
-  script(src="/user.js")
-  script(src="/app.js")
+  script(src="/userd.js")
+  script(src="/appd.js")

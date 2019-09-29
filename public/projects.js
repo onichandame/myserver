@@ -18,5 +18,5 @@ function updatepro(str){
   }
 }
 function additem(pro){
-  return '<li class="col-xs-12 col-lg-6 justify-content-center"><a class="nav-link card mx-auto" href="'+pro.link+'"><img class="card-img-top" src="'+pro.icon+'"><div class="card-body"><h5 class="card-title">'+pro.title+'</h5><p class="card-text">'+pro.desc+'</p></div></a></li>'
+  return '<li class="col-xs-12 col-lg-6 justify-content-center"><a class="nav-link card mx-auto" href="'+pro.link+'"><img class="card-img-top mx-auto" src="'+pro.icon+'"><div class="card-body"><h5 class="card-title">'+pro.title+'</h5><p class="card-text">'+pro.desc+'</p></div></a></li>'
 }

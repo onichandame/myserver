@@ -1,7 +1,9 @@
 {
-  "dbpath":"db",
-  "dbname":"db.sqlite3",
-  "head":"TableHead",
+  "db":{
+    "dbpath":"db",
+    "dbname":"db.sqlite3",
+    "head":"TableHead"
+  },
   "encrypt":{
     "name":"TableEncrypt",
     "cols":{

@@ -5,3 +5,11 @@
 .nav-item:hover{
   background-color:#000000;
 }
+.dropdown-menu{
+  background-color:#000000;
+  border-style:insert;
+  border-color:#999999;
+}
+.dropdown-menu a{
+  color:#ffffff;
+}

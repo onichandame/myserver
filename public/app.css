@@ -1,17 +1,6 @@
 .apps.overflow-auto::-webkit-scrollbar {
-    width: 10px;
-    background: #222222; /* make scrollbar transparent */
-}
-.apps.overflow-auto::-webkit-scrollbar-thumb {
-  background:#999999;
-}
-.grid{
-  margin:0 auto;
-  text-align:center;
-}
-.grid li{
-  display:inline-block;
-  vertical-align:top;
+    width: 0;
+    background: transparent;
 }
 .apps-reg{
   text-align:left;
@@ -21,5 +10,27 @@
   color:#ffffff;
 }
 .apps-reg a:hover{
-  color:#0000ff;
+  color:#0645AD;
+}
+.grid{
+  margin:20 auto;
+  text-align:left;
+}
+.grid li{
+  display:inline-block;
+  vertical-align:top;
+  margin-right:2rem;
+}
+.card{
+  height:20rem;
+  width:15rem;
+  background-color:#000000;
+}
+.card .card-img-top{
+  height:10rem;
+  width:10rem;
+}
+.card-body *{
+  color:#ffffff;
+  text-align:left;
 }

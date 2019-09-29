@@ -6,7 +6,7 @@ const path = require('path')
 const app = express()
 const port = 8080
 const cookieParser=require('cookie-parser')
-const init=require(path.resolve(__dirname,'core','util','init.js'))
+const init=require(path.resolve(__dirname,'core','init.js'))
 
 app.set('views','views')
 app.set('view engine','pug')
@@ -16,14 +16,8 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended: false}))
 app.use(cookieParser())
 
-app.get('/',(req,res)=>{res.render('home.pug')})
-app.get('/about',(req,res)=>{res.render('about.pug')})
-app.get('/app',(req,res)=>{res.render('app.pug')})
-app.listen(port, function (){
-  console.log('Listening on port 8080!')
-})
-/*
-init(()=>{
+init()
+.then(()=>{
   app.use('/oauth',require(path.resolve(__dirname,'core','oauth','main.js')))
   
   app.use('/app',require(path.resolve(__dirname,'app','main.js')))
@@ -35,6 +29,7 @@ init(()=>{
   })
 })
 
+/*
 app.get('/video', function(req, res) {
   const path = 'assets/sample.mp4'
   const stat = fs.statSync(path)

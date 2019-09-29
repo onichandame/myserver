@@ -14,7 +14,7 @@
  */
 const path=require('path')
 const {checkTable}=require(path.resolve(global.basedir,'core','util','db.js'))
-const {logger}=require(path.resolve(global.basedir,'core','util','logger.js'))
+const {exit}=require(path.resolve(global.basedir,'core','util','logger.js'))
 async function init(){
   const tbls=[
     {

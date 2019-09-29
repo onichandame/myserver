@@ -11,22 +11,21 @@
  */
 const path=require('path')
 const fs=require('fs')
-const {exit,getConfig}=require(path.resolve(__dirname,'base.js'))
-const {initDB}=require(path.resolve(__dirname,'db.js'))
+const {exit,getConfig}=require(path.resolve(__dirname,'util','base.js'))
+const initDB=require(path.resolve(__dirname,'db','init.js'))
 const {initLog}=require(path.resolve(__dirname,'logger.js'))
 const {initEncrypt}=require(path.resolve(__dirname,'encrypt.js'))
 
-async function init(callback){
+async function init(){
+
   initGlobalDir()
-  const init=require(path.resolve(global.basedir,'core','oauth','init.js'))
-  initDB(()=>{
-    initLog(()=>{
-      initEncrypt(()=>{
-        init(()=>{
-          return callback()
-        })
-      })
-    })
+
+  return initDB()
+  .then(()=>{initOauth()})
+  .then(()=>{initLog()})
+  .then(()=>{initEncrypt()})
+  .catch((err)=>{
+    exit(err)
   })
 }
 function initGlobalDir(){
@@ -35,17 +34,6 @@ function initGlobalDir(){
     global.basedir=basedir
   else
     exit('Failed to find basedir')
-  const config=path.resolve(global.basedir,'config.json')
-  if(checkConfig(config))
-    global.config=config
-}
-function checkConfig(config){
-  try{
-    fs.accessSync(config,fs.constants.R_OK)
-    return true
-  }catch(e){
-    return false
-  }
 }
 function findBaseDir(){
   const files=['server.js','package.json']

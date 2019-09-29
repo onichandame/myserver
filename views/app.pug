@@ -1,8 +1,8 @@
 extends main.pug
 append head
-  link(type="stylesheet",href="/app.css")
+  link(rel="stylesheet",href="/app.css")
 block main
-  div(class="apps")
+  div(class="apps overflow-auto")
     ul(class="grid")
   div(class="apps-reg")
     a(class="nav-link",href="#") Register your own link
