@@ -3,8 +3,8 @@ const fs=require('fs')
 const Transport=require('winston-transport')
 const winston=require('winston')
 const util=require('util')
-const {exit,getConfig}=require(path.resolve(__dirname,'base.js'))
-const {select,addTable,checkTable,dropTable}=require(path.resolve(__dirname,'db.js'))
+const insert=require(path.resolve(basedir,'core','db','insert.js'))
+const config=require(path.resolve(__dirname,'config.js'))
 
 /* logger
  *
@@ -12,53 +12,48 @@ const {select,addTable,checkTable,dropTable}=require(path.resolve(__dirname,'db.
  * info: things worth storage for future analysis
  * warn: non-blocking error
  * error: fatal error causing service to shutdown
- *
- * Storage:
- * 1. Database: (info) (warn) (error)
- * 3: Console: (debug)
  */
 const levels={error:0,
               warn:1,
               info:2,
               debug:3
 }
-// Log transport for writing to database
-//
-// Table: TableLog
-//
-// rowid(INT NOT NULL)
-// level(INT NOT NULL)
-// datetime(TEXT NOT NULL)
-// message(TEXT NOT NULL)
-// request(TEXT)
-// origin(TEXT)
+
 class MyLogger extends Transport{
   constructor(opts){
     super(opts)
   }
-  log(info,callback){
-    setImmediate(()=>{
-      const lvl=info.level
-      info.level=levels[info.level]
-      info.timestamp=new Date().toString()
-      if(info.level>2)
-        console.log('['+new Date().toString()+'] '+info.message)
-      else
-        insert('log',info,()=>{
-          callback()
-        })
+  log(obj){
+    return config()
+    .then((c)=>{
+      return insert(c.name,obj)
     })
   }
-  info(message,callback){
-    log({level:info,message:message})
-    return callback()
+  compliment(message,lvl){
+    return {message:message,level:levels.lvl,timestamp:new Date().toString()}
   }
-  error(message,callback){
-    log({level:error,message:message})
-    if(callback)
-      return callback()
-    else
-      exit('[Error] '+message)
+  debug(message){
+    return log(compliment(message,'debug'))
+  }
+  info(message){
+    return log(compliment(message,'info'))
+  }
+  warn(message){
+    return log(compliment(message,'warn'))
+  }
+  error(message){
+    const obj=compliment(message,'error')
+    console.log(obj)
+    return log(obj)
+    .catch((err)=>{
+      fs.write(path.resolve(global.basedir,'error.log'),obj,(err)=>{
+        return exit()
+      })
+      return exit()
+    })
+  }
+  exit(){
+    process.exit(1)
   }
 }
 const logger=winston.createLogger({
@@ -70,27 +65,4 @@ const logger=winston.createLogger({
   silent:false
 })
 
-async function checkConfig(callback){
-  getConfig((param)=>{
-    const logparam=param.log
-    if(!(logparam&&logparam.name&&logparam.cols))
-      exit('Failed to retrieve schema of logger')
-    else
-      return callback(logparam)
-  })
-}
-
-async function initLog(callback){
-  checkConfig((param)=>{
-    param.alias='log'
-    checkTable(param,(flag)=>{
-      if(!flag)
-        exit('Failed to create Table for Logger')
-      return callback()
-    })
-  })
-}
-module.exports={
-  initLog:initLog,
-  logger:logger
-}
+module.exports=logger

@@ -13,12 +13,17 @@ function init(){
       if(err){
         if(err.code=='ENOENT')
           fs.mkdir(p.path,(err)=>{
-            err ? throw err : return access()
+            if(err)
+              throw err
+            return access()
           })
         else
           throw err
       }else{
-        stat.isDirectory() ? return access() : throw p.path+' is not a directory'
+        if(stat.isDirectory())
+          return access()
+        else
+          throw p.path+' is not a directory'
       }
     })
   })

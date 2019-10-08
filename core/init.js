@@ -11,29 +11,19 @@
  */
 const path=require('path')
 const fs=require('fs')
-const {exit,getConfig}=require(path.resolve(__dirname,'util','base.js'))
 const initDB=require(path.resolve(__dirname,'db','init.js'))
-const {initLog}=require(path.resolve(__dirname,'logger.js'))
-const {initEncrypt}=require(path.resolve(__dirname,'encrypt.js'))
+const initLog=require(path.resolve(__dirname,'logger','init.js'))
 
-async function init(){
+function init(){
 
-  initGlobalDir()
+  global.basedir=findBaseDir()
 
   return initDB()
-  .then(()=>{initOauth()})
-  .then(()=>{initLog()})
-  .then(()=>{initEncrypt()})
+  .then(()=>{return initLog()})
   .catch((err)=>{
-    exit(err)
+    console.log(err)
+    process.exit(1)
   })
-}
-function initGlobalDir(){
-  const basedir=findBaseDir()
-  if(basedir)
-    global.basedir=basedir
-  else
-    exit('Failed to find basedir')
 }
 function findBaseDir(){
   const files=['server.js','package.json']
@@ -58,11 +48,11 @@ function findBaseDir(){
       else
         result=curdir
     }
+    return result
   }catch(e){
-    console.log(e.message)
-    result=false
+    console.log(e)
+    process.exit(1)
   }
-  return result
 }
 
 module.exports=init
