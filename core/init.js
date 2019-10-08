@@ -11,12 +11,13 @@
  */
 const path=require('path')
 const fs=require('fs')
-const initDB=require(path.resolve(__dirname,'db','init.js'))
-const initLog=require(path.resolve(__dirname,'logger','init.js'))
 
 function init(){
 
   global.basedir=findBaseDir()
+
+  const initDB=require(path.resolve(__dirname,'db','init.js'))
+  const initLog=require(path.resolve(__dirname,'logger','init.js'))
 
   return initDB()
   .then(()=>{return initLog()})

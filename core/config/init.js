@@ -23,7 +23,7 @@ function exists(){
 function accessible(){
   return exists()
   .then(()=>{
-    return fs.access(filepath,fs.constants.R_OK | fs.constants.W_OK)
+    return fs.access(filepath,fs.constants.R_OK | fs.constants.W_OK,()=>{})
   })
 }
 
@@ -33,7 +33,7 @@ function init(){
     fs.readFile(filepath,(err,data)=>{
       const param=JSON.parse(data)
       global.config=param
-      return null
+      return param
     })
   })
 }

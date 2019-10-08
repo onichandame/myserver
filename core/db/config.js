@@ -9,6 +9,8 @@ const dft={
 function config(){
   return get()
   .then(()=>{
+    console.log(global.config)
+    console.log('above')
     let param=global.config.db
     if(!(param&&param.path&&param.name))
       global.config.db=dft

@@ -21,9 +21,7 @@ function addtable(schema){
   return connect()
   .then((db)=>{
     db.serialize(()=>{
-      db.run((getsql(),(err)=>{
-        err ? throw err : return null
-      }))
+      return db.run(getsql())
     })
   })
 }
