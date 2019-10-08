@@ -17,10 +17,11 @@ function insert(tbl,row){
     const kv=getkv()
     return `INSERT INTO ${tbl} ${kv[0]} VALUES ${kv[1]}`
   }
-  return connect((db)=>{
+  return connect()
+  .then((db)=>{
     db.serialize(()=>{
       db.run(getsql(),(err)=>{
-        return this.lastID
+        err ? throw err : return this.lastID
       })
     })
   })

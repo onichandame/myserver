@@ -1,6 +1,10 @@
 const path=require('path')
 const connect=require(path.resolve(__dirname,'connect.js'))
 
+// schema:{
+//   name: string
+//   cols: {col name: col type}
+// }
 function addtable(schema){
   function getsql(){
     function getkv(){
@@ -13,10 +17,15 @@ function addtable(schema){
     return `CREATE TABLE IF NOT EXISTS ${schema.name} ${getkv()}`
   }
   if(!(schema&&schema.name&&schema.cols))
-    return Promise.reject({message:'Requires table name and coltype, received '+JSON.stringify(schema)})
-  return connect((db)=>{
+    throw 'Requires table name and cols, received '+JSON.stringify(schema)
+  return connect()
+  .then((db)=>{
     db.serialize(()=>{
-      db.run(getsql,(err)=>{return})
+      db.run((getsql(),(err)=>{
+        err ? throw err : return null
+      }))
     })
   })
 }
+
+module.exports=addtable

@@ -12,10 +12,11 @@ function update(tbl,fields,cond){
     }
     return `UPDATE ${tbl} SET ${getkv} WHERE ${cond}`
   }
-  return connect((db)=>{
+  return connect()
+  .then((db)=>{
     db.serialize(()=>{
       db.run(getsql(),(err)=>{
-        return this.changes
+        err ? throw err : return this.changes
       })
     })
   })

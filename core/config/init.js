@@ -1,7 +1,7 @@
 const path=require('path')
 const fs=require('fs')
 
-const filepath=path.resolve(global.basedir,'config')
+const filepath=path.resolve(global.basedir,'config.json')
 
 function exists(){
   return new Promise((resolve,reject)=>{
@@ -23,7 +23,7 @@ function exists(){
 function accessible(){
   return exists()
   .then(()=>{
-    fs.access(filepath,fs.constants.R_OK | fs.constants.W_OK)
+    return fs.access(filepath,fs.constants.R_OK | fs.constants.W_OK)
   })
 }
 
@@ -33,6 +33,7 @@ function init(){
     fs.readFile(filepath,(err,data)=>{
       const param=JSON.parse(data)
       global.config=param
+      return null
     })
   })
 }

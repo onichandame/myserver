@@ -1,7 +1,7 @@
 const path=require('path')
 const connect=require(path.resolve(__dirname,'connect.js'))
 
-function select(tbl,target,cond,handle,finish){
+function select(tbl,target,cond,handle){
   function getsql(){
     function getkv(){
       var result=''
@@ -12,12 +12,13 @@ function select(tbl,target,cond,handle,finish){
     }
     return `SELECT ${getsql()} FROM ${tbl} WHERE ${cond}`
   }
-  return connect((db)=>{
+  return connect()
+  .then((db)=>{
     db.serialize(()=>{
-      db.each(getsql,(err,row)=>{
-        handle(row)
+      db.each(getsql(),(err,row)=>{
+        err ? throw err : handle(row)
       },(err,num)=>{
-        return finish(num)
+        err ? throw err : return num
       })
     })
   })
