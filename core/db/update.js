@@ -6,19 +6,15 @@ function update(tbl,fields,cond){
     function getkv(){
       var result=''
       for(let [k,v] of Object.entries(fields)){
-        result+=k+'='+v+','
+        result+=k+'=\''+v+'\','
       }
       return result.slice(0,-1)
     }
     return `UPDATE ${tbl} SET ${getkv} WHERE ${cond}`
   }
   return connect()
-  .then((db)=>{
-    db.serialize(()=>{
-      db.run(getsql(),(err)=>{
-        err ? throw err : return this.changes
-      })
-    })
+  .then(db=>{
+    return db.run(getsql())
   })
 }
 

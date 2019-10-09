@@ -8,10 +8,8 @@ const dft={
 
 function config(){
   return get()
-  .then(()=>{
-    console.log(global.config)
-    console.log('above')
-    let param=global.config.db
+  .then(c=>{
+    let param=c.db
     if(!(param&&param.path&&param.name))
       global.config.db=dft
     return global.config.db

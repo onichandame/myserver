@@ -18,9 +18,13 @@ function init(){
 
   const initDB=require(path.resolve(__dirname,'db','init.js'))
   const initLog=require(path.resolve(__dirname,'logger','init.js'))
+  const initUtil=require(path.resolve(__dirname,'util','init.js'))
+  const initOauth=require(path.resolve(__dirname,'oauth','init.js'))
 
   return initDB()
   .then(()=>{return initLog()})
+  .then(()=>{return initUtil()})
+  .then(()=>{return initOauth()})
   .catch((err)=>{
     console.log(err)
     process.exit(1)

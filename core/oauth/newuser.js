@@ -6,11 +6,12 @@
  * browser receives the status code and displays the message
  */
 const path=require('path')
-const {select,insert,update}=require(path.resolve(__dirname,'..','util','db.js'))
-const subpath=path.resolve('core','oauth')
+const insert=require(path.resolve(global.basedir,'core','db','insert.js'))
+const select=require(path.resolve(global.basedir,'core','db','select.js'))
 const randomstring=require('randomstring')
-const sender=require(path.resolve(__dirname,'..','util','mail.js')).sendActivationCode
-const {generateJWT}=require(path.resolve(__dirname,'..','util','encrypt'))
+const sender=require(path.resolve(global.basedir,'core','util','mail.js')).sendActivationCode
+const encode=require(path.resolve(global.basedir,'core','util','encrypt.js')).encode
+
 module.exports=function(req,res,next){
   if(req.method=='GET'){
     if(req.query.code){

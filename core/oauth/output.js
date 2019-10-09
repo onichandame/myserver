@@ -2,43 +2,43 @@
  */
 const path=require('path')
 const fs=require('fs')
-const {logger}=require(path.resolve(__dirname,'..','util','logger.js'))
+const logger=require(path.resolve(global.basedir,'core','logger','logger.js'))
+const select=require(path.resolve(global.basedir,'core','db','select.js'))
 
 const dfterrdesc={code:500,
   desc:'Internal error in server',
   sol:['Contact the maintainer']
 }
 
-function dfterr(err,req,res){
-  if(res.status)
-    stderr(err,req,res)
-  else
-    res.status(500).render('error.pug',dfterrdesc)
-}
-function stderr(err,req,res){
+function send(err,req,res){
   if(err.code)
     res.status(err.code)
   else
     res.status(500)
-  const errdesc=path.resolve(__dirname,'errdesc.json')
-  fs.readFile(errdesc,(err,data)=>{
-    if(err)
-      logger.error('Failed to read errdesc')
-    try{
-      tmp=JSON.parse(data)
-      res.xhr ? res.send() : 
-                res.render('error.pug',(res.status in tmp ? {code:res.status,desc:tmp[res.status].description,sol:tmp[res.status].solution} : dfterrdesc))
-    }catch(e){
-      logger.error('Failed to parse JSON from errdesc')
-    }
+  return select('TableError',['code,description','solutions'],'code='+res.status)
+  .then(rows=>{
+    if(rows.length!=1)
+      throw 'code '+res.status+' requires description and solutions!'
+    res.render('error.pug',{code:res.status,desc:rows[0].description,sol:rows[0].solutions})
+    return err
   })
 }
+
+function log(e){
+  if(e.log)
+    return logger.write(e.message,e.level)
+  else
+    return Promise.resolve()
+}
+
 module.exports=function(err,req,res,next){
-  if(err){
-    if(err.message)
-      logger.info(err.message)
-    else
-      logger.info('Error Occurred but No Message!')
+  return send()
+  .then(log)
+
+  if(err.log){
+    if(!err.message)
+      err.message=''
+    logger.write(err.messge,err.level)
     if(res.status)
       stderr(err,req,res)
     else

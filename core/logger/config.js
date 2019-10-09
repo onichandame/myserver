@@ -12,8 +12,8 @@ const dft={
 
 function config(){
   return get()
-  .then(()=>{
-    const param=global.config.log
+  .then(c=>{
+    let param=c.log
     if(!(param&&param.tbl&&param.cols))
       global.config.log=dft
     return global.config.log

@@ -19,10 +19,8 @@ function addtable(schema){
   if(!(schema&&schema.name&&schema.cols))
     throw 'Requires table name and cols, received '+JSON.stringify(schema)
   return connect()
-  .then((db)=>{
-    db.serialize(()=>{
-      return db.run(getsql())
-    })
+  .then(db=>{
+    return db.run(getsql())
   })
 }
 

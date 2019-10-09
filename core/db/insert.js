@@ -8,7 +8,7 @@ function insert(tbl,row){
       var val='('
       for(let [k,v] of Object.entries(row)){
         key+=k+','
-        val+=v+','
+        val+='\''+v+'\','
       }
       key=key.slice(0,-1)+')'
       val=val.slice(0,-1)+')'
@@ -18,12 +18,8 @@ function insert(tbl,row){
     return `INSERT INTO ${tbl} ${kv[0]} VALUES ${kv[1]}`
   }
   return connect()
-  .then((db)=>{
-    db.serialize(()=>{
-      db.run(getsql(),(err)=>{
-        err ? throw err : return this.lastID
-      })
-    })
+  .then(db=>{
+    return db.run(getsql())
   })
 }
 

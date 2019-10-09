@@ -1,0 +1,47 @@
+[
+  {
+    "code":500,
+    "description":"An unknown error occurred in the server. It is confirmed that your latest request has failed.",
+    "solutions":[
+      "Try again",
+      "If the error persists, contact the maintainer of this site"
+    ]
+  },
+  {
+    "code":409,
+    "description":"Your request could not be processed because an existing resource already exists.",
+    "solutions":["Change your request and re-submit"
+    ]
+  },
+  {
+    "code":400,
+    "description":"Your request could not be processed because the input received does not satisfy criteria",
+    "solutions":[
+      "Change your request to meet the requirement and re-submit"
+    ]
+  },
+  {
+    "code":401,
+    "description":"Your credentials could not be validated therefore your identity was not authenticated",
+    "solutions":[
+      "Check your credentials and retry",
+      "Reset your password"
+    ]
+  },
+  {
+    "code":422,
+    "description":"Your request could not be processed because your input data is invalid.",
+    "solutions":[
+      "Check your query params if GET and form entries if POST",
+      "If the error persists, contact the maintainer of this site"
+    ]
+  },
+  {
+    "code":405,
+    "description":"The server could not process your request because an unsupported method was used.",
+    "solutions":[
+      "Clear cookies and refresh page",
+      "If the error persists, contact the maintainer of this site"
+    ]
+  }
+]

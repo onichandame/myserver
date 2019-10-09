@@ -1,17 +1,12 @@
 const path=require('path')
 const config=require(path.resolve(__dirname,'config.js'))
 const fs=require('fs')
+const fsp=require('fs').promises
 
-async function save(){
-  return new Promise(resolve,reject)=>{
-    if(!config)
-      return reject({message:'config not initialized'})
-    if(!global.config)
-      return reject({message:'config file path not initialized'})
-    fs.writeFile(global.config,JSON.stringify(config),(err)=>{
-      return err ? reject(err) : resolve()
-    })
-  }
+const filepath=path.resolve(global.basedir,'config.json')
+
+function save(){
+  return fsp.writeFile(filepath,JSON.stringify(global.config))
 }
 
 module.exports=save

@@ -1,5 +1,6 @@
 const path=require('path')
 const fs=require('fs')
+const fsp=require('fs').promises
 const Transport=require('winston-transport')
 const winston=require('winston')
 const util=require('util')
@@ -32,24 +33,30 @@ class MyLogger extends Transport{
   compliment(message,lvl){
     return {message:message,level:levels.lvl,timestamp:new Date().toString()}
   }
+  write(message,lvl){
+    return log(compliment(message,lvl))
+  }
   debug(message){
-    return log(compliment(message,'debug'))
+    return write(message,'debug')
   }
   info(message){
-    return log(compliment(message,'info'))
+    return write(message,'info')
   }
   warn(message){
-    return log(compliment(message,'warn'))
+    return write(message,'warn')
   }
   error(message){
     const obj=compliment(message,'error')
     console.log(obj)
     return log(obj)
-    .catch((err)=>{
-      fs.write(path.resolve(global.basedir,'error.log'),obj,(err)=>{
+    .catch(err=>{
+      return fsp.write(path.resolve(global.basedir,'error.log'),obj)
+      .then(()=>{
         return exit()
       })
-      return exit()
+      .catch(e=>{
+        return exit()
+      })
     })
   }
   exit(){
