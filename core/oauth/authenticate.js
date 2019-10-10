@@ -10,16 +10,60 @@
  * 1. support more oauth type
  */
 const path=require('path')
-const randomstring=require('randomstring')
-const {insert,select}=require(path.resolve(__dirname,'..','util','db.js'))
-const {generateJWT,hash}=require(path.resolve(__dirname,'..','util','encrypt.js'))
+const insert=require(path.resolve(global.basedir,'core','db','insert.js'))
+const select=require(path.resolve(global.basedir,'core','db','select.js'))
+const {hash,decode,encode}=require(path.resolve(global.basedir,'core','util','encrypt.js'))
+
 module.exports=function(req,res,next){
+  const {response_type,client_id,redirect_uri,scope}=req.query
+  const {sid}=req.cookies
+  return decode(sid)
+  .then(checkSession)
+  .then(login)
+  .catch(checkClient)
+
+  function login(){
+    if(!(req.method=='GET'||'POST'))
+      return next({code:405})
+    res.status(200)
+    return client_id ? select('TableApp',['permission','redirect_uri'],'rowid='+client_id)
+    .then(rows=>{
+      if(!rows.length)
+        return Promise.reject(0)
+      return rows[0]
+    })
+    .then(row=>{
+      if(row.permission<scope)
+        return new Promise.reject(1)
+      return null
+    })
+    .then(()=>{
+      res.status(302)
+      res.set('Location')
+      return
+    })
+    .catch(flag=>{
+      if(flag==0)
+        return next({code:404})
+      else if(flag==1)
+        return next({code:403})
+    })
+    : next()
+  }
+
+  function checkSession(obj){
+    const {exp,iat}=obj
+    if(new Date().getTime()/1000>exp+iat)
+      return Promise.resolve()
+    else
+      return Promise.reject()
+  }
   if(req.method=='GET'){
     res.status(200)
-    res.render('core/oauth/authenticate.pug')
+    res.page=path.resolve('oauth','authenticate.pug')
+    return next()
   }else if(req.method=='POST'){
-    const {email,pass}=req.body
-    const {response_type,client_id,redirect_uri,scope}=req.query
+    const {email,password}=req.body
     var valid=false
     if(response_type=='code'){
       //Auth code flow
@@ -54,6 +98,6 @@ module.exports=function(req,res,next){
       })
     }
   }else{
-    next({code:405})
+    return next({code:405})
   }
 }

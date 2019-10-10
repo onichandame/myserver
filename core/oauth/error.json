@@ -37,8 +37,25 @@
     ]
   },
   {
+    "code":403,
+    "description":"Your do not have permission for the request",
+    "solutions":[
+      "Switch to another account",
+      "Review your request"
+    ]
+  },
+  {
+    "code":404,
+    "description":"The request resource is not found in the server",
+    "solutions":[
+      "Clear cookies and refresh page",
+      "Scan disk for virus an Trojan",
+      "Contact the maintainer of the website"
+    ]
+  },
+  {
     "code":405,
-    "description":"The server could not process your request because an unsupported method was used.",
+    "description":"The server could not process your request because an unsupported HTTP method was used.",
     "solutions":[
       "Clear cookies and refresh page",
       "If the error persists, contact the maintainer of this site"

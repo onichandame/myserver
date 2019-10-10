@@ -1,4 +1,4 @@
-var valid={pass:false,
+var valid={password:false,
   email:false}
 function update(){
   var flag=true
@@ -12,15 +12,15 @@ function update(){
   else
     $('#submit').attr('disabled',true)
   // password field
-  flag=valid.pass
+  flag=valid.password
   if(!flag){
-    if($('.pass~p').length<1){
-      $('.pass').after('<p>invalid password</p>')
-      var popper=new Popper($('.pass'),$('.pass~p'),{placement:'right'})
+    if($('.password~p').length<1){
+      $('.password').after('<p>invalid password</p>')
+      var popper=new Popper($('.password'),$('.password~p'),{placement:'right'})
     }
   }else{
-    if($('.pass~p').length>0){
-      $('.pass~p').remove()
+    if($('.password~p').length>0){
+      $('.password~p').remove()
     }
   }
   // email field
@@ -37,11 +37,11 @@ function update(){
   }
 }
 $(document).ready(function(){
-  $('input[name=pass]').change(function(){
-    if($('input[name=pass]').val().length<3)
-      valid.pass=false
+  $('input[name=password]').change(function(){
+    if($('input[name=password]').val().length<3)
+      valid.password=false
     else
-      valid.pass=true
+      valid.password=true
     update()
   })
   $('input[name=email]').change(function(){
@@ -58,7 +58,7 @@ $(document).ready(function(){
     let xhr=new XMLHttpRequest()
     xhr.open('POST','')
     const form=$('form').serializeArray()
-    var body='pass='+$('input[name=pass]').val()+'&email='+$('input[name=email]').val()
+    var body='password='+$('input[name=password]').val()+'&email='+$('input[name=email]').val()
     xhr.setRequestHeader('Content-Type','application/x-www-form-urlencoded')
     xhr.send(body)
     xhr.onload=function(){

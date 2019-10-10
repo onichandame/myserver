@@ -1,125 +1,141 @@
 /* user opens '/newuser'
- * server returns page with fields 'email' 'given_name' family_name' and 'name_order'
+ * server returns page with fields 'email' and 'username'
  * user fills the fields and xhr post to current url
  * server validates the info and return http status
- * server encodes the email, creation_date and secret to jwt and sends the code to email asyncally
+ * server creates a random string and stores it in the password field then email the string to the registered email
+ * browser receives the status code and displays the message
+ *
+ * When user clicks the link in the email
+ * server receives the string as a query field
+ * server validates the string and display password creation page
+ * user fills the fields and xhr posts to current url
+ * server validates the password and update the database then returns status
  * browser receives the status code and displays the message
  */
+
 const path=require('path')
 const insert=require(path.resolve(global.basedir,'core','db','insert.js'))
 const select=require(path.resolve(global.basedir,'core','db','select.js'))
 const randomstring=require('randomstring')
 const sender=require(path.resolve(global.basedir,'core','util','mail.js')).sendActivationCode
-const encode=require(path.resolve(global.basedir,'core','util','encrypt.js')).encode
+const {hash,encode}=require(path.resolve(global.basedir,'core','util','encrypt.js'))
 
 module.exports=function(req,res,next){
+  const code=req.query.code
+  const uid=req.query.uid
   if(req.method=='GET'){
-    if(req.query.code){
-      decode(req.query.code,function(err,data){
-        if(err)
-          return next({code:500,message:err.message})
-        const creation_date=data.creation_date
-        const secret=data.secret
-        const email=data.email
-        const uid=data.uid
-        let db=new sqlite3.Database(db_param.dbname,sqlite3.OPEN_READWRITE|sqlite3.OPEN_CREATE,(err)=>{
-          if(err)
-            return next({code:500,message:err.message})
-        })
-        db.serialize(function(){
-          db.each('SELECT email,password,creation_date FROM '+db_param.tbl.user.name+' WHERE rowid='+uid,(err,row)=>{
-            if(err)
-              return next({code:500,message:err.message})
-            if(secret==row.password&&creation_date==row.creation_date&&email==row.email){
-              res.status(200)
-              res.render('init.pass.pug')
-            }else{
-              return next({code:422})
-            }
-          })
-        })
+    if(code&&uid){
+      return select('TableUser',['password'],'uid='+uid)
+      .then(rows=>{
+        if(!rows.length)
+          return next({code:404})
+        if(code!=rows[0].password)
+          return next({code:422})
+        res.status(200)
+        res.page=path.resolve('oauth','newpass.pug')
+        return next()
       })
     }else{
-      //display user registration form
-      res.render(path.resolve(subpath,'newuser.pug'))
+      return Promise.resolve(res.render(path.resolve('oauth','newuser.pug')))
     }
-  // post with given name, surname, name order, email
   }else if(req.method=='POST'){
-    if(req.query.code){
+    if(code&&uid){
       const password=req.body.pass
       var regex=/^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,16}$/
-      if(!regex.test(password)){
-        console.log('password invalid')
-        return next({code:422})
-      }
-      decode(req.query.code,function(err,data){
-        if(err){
-          console.log('error passed on from decode')
-          console.log(JSON.stringify(err))
-          return next({code:500,message:err.message})
-        }
-        const creation_date=data.creation_date
-        const secret=data.secret
-        const email=data.email
-        const uid=data.uid
-        let db=new sqlite3.Database(db_param.dbname,sqlite3.OPEN_READWRITE|sqlite3.OPEN_CREATE,(err)=>{
-          if(err)
-            return next({code:500,message:err.message})
-        })
-        db.serialize(function(){
-          const hash=require(path.resolve(__dirname,'util.js')).hashCode
-          db.each('SELECT active,email,creation_date,password FROM '+db_param.tbl.user.name+' WHERE rowid='+uid,(err,row)=>{
-            if(err)
-              return next({code:500,message:err.message})
-            if(!(secret==row.password&&creation_date==row.creation_date&&email==row.email)){
-              console.log('wrong credentials: '+JSON.stringfiy(row)+JSON.stringify(data))
-              return next({code:422,message:'Wrong code: '+req.query.code})
-            }
-            if(row.active>0){
-              console.log('already activated')
-              return next({code:409,message:'re-activation request for uid='+uid})
-            }
-            db.run('UPDATE '+db_param.tbl.user.name+' SET active=1,password=\''+hash(password)+'\' WHERE rowid='+uid,(err)=>{
-              if(err){
-                console.log('update failed'+JSON.stringify(err))
-                return next({code:500,message:err.message})
-              }
-              res.status(200)
-              res.send()
+      return new Promise((resolve,reject)=>{
+        if(!regex.test(password))
+          return resolve(next({code:422}))
+        return select('TableUser',['password','active'],'rowid='+uid)
+        .then(rows=>{
+          if(!rows.length)
+            return next({code:404})
+          if(!(!rows[0].active)&&rows[0].password==code)
+            return next({code:422})
+          return hash(password)
+          .then(p=>{
+            update('TableUser',{active:1,password:p},'rowid='+uid)
+            .then(()=>{
+              return select('TableUser',['password','active'],'rowid='+uid)
+              .then(rows=>{
+                if(!rows.length)
+                  return logger.warn({message:'uid:'+uid+' failed to update password'})
+                  .then(()=>{
+                    return next()
+                  })
+                if(!(rows[0].active&&rows[0].password==p))
+                  return logger.warn({message:'uid'+uid+' updated wrong password or active'})
+                  .then(()=>{
+                    return next()
+                  })
+                res.status(200)
+                return next()
+              })
             })
-            .close()
           })
         })
       })
     }else{
+
       const {username,email}=req.body
-      if(!(username&&email))
-        return next({code:400})
-      select('user',['active'],'email=\''+email,(row)=>{
-        if(active>0){
-          res.set('Location','')
-          return next({code:303})
-        }
-      },(num)=>{
-        if(num>0){
-          update('user',{username:username,password:randomstring.generate({length:20,charset:'alphabetic'})},(id)=>{
-            finalize(id)
-          })
-        }else{
-          insert('user',{email:email,username:username,active:0,password:randomstring.generate({length:20,charset:'alphabetic'})},(id)=>{
-            finalize(id)
-          })
-        }
-        function finalize(id){
-          select('user',['rowid','email','username','password'],'rowid='+id,(row)=>{
-            var url=req.protocol+'://'+req.hostname+':8080'+req.path+'?code='+generateJWT({secret:row.password,uid:row.rowid,username:row.username})
-            sender(row.username,url,row.email)
-            res.status(200)
-            res.locals.page='core/oauth/success.newuser.pug'
-            return next()
-          })
-        }
+      return new Promise((resolve,reject)=>{
+        if(!(username&&email))
+          return resolve(next({code:422}))
+        else return resolve()
       })
+      .then(checkConflict)
+      .then(saveUser)
+      .then(finalize)
+
+      // null: conflict
+      // 1: inactive account exists
+      // 2: no conflict
+      function checkConflict(){
+        return select('TableUser',['active','username','email'],'email='+email)
+        .then(rows=>{
+          if(rows.length&&rows[0].active)
+            return next({code:303})
+          else if(rows.length)
+            return 1
+          else
+            return 2
+        })
+      }
+      function saveUser(flag){
+        if(flag==1)
+          return update('TableUser',{username:username,password:randomstring.generate({length:20,charset:'alphabetic'}),active:0,created_at:new Date().toString(),permission:2})
+          .then(()=>{
+            return select('TableUser',['email','username','password','rowid'],'email=\''+email+'\'')
+            .then(rows=>{
+              if(!rows.length)
+                return logger.error(new Error('Failed to update user info '+email))
+              return rows[0]
+            })
+          })
+        else if(flag==2)
+          return insert('TableUser',{username:username,email:email,active:0,password:randomstring.generate({length:20,charset:'alphabetic'}),created_at:new Date().toString(),permission:2})
+          .then(lastid=>{
+            return select('TableUser',['password','username','email','rowid'],'rowid='+lastid)
+            .then(rows=>{
+              if(!rows.length)
+                return logger.error(new Error('Failed to insert user info '+email))
+              return rows[0]
+            })
+          })
+        else
+          return null
+      }
+      function finalize(row){
+        if(!row)
+          return null
+        row.lk=req.protocol+'://'+req.hostname+':8080'+req.path+'?code='+row.password
+        return sender(row)
+        .then(()=>{
+          res.status(200)
+          return next()
+        })
+      }
     }
+  }else{
+    return next({code:405})
   }
 }

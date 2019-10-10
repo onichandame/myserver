@@ -2,19 +2,23 @@ const path=require('path')
 const pug=require('pug')
 const logger=require(path.resolve(global.basedir,'core','logger','logger.js'))
 
-function sendActivationCode(username,url,email){
-  let text=pug.renderFile(path.resolve(__dirname,'email'+'activate.pug'),{username:username,lk:url})
-  sendMail('Activate Your Account',email,text,(err)=>{
-    if(err)
-      logger.info(err.message ? err.message : 'Failed to send activation code to '+username)
-  })
-}
-function sendApp(info){
-  info.title='Your app has been registered'
-  info.body=pug.renderFile(path.resolve(global.basedir,'views','newapp.pug'),info)
+const viewdir=path.resolve(__dirname,'mail')
+
+function sendActivationCode(info){
+  info.title='Activate Your Account'
+  info.body=pug.renderFile(path.resolve(viewdir,'activate.pug'),info)
+  info.correspondent=info.email
   return sendMail(info)
 }
 
+function sendApp(info){
+  info.title='Your app has been registered'
+  info.body=pug.renderFile(path.resolve(viewdir,'newapp.pug'),info)
+  return sendMail(info)
+}
+
+/* compulsory argument: mail{title,correspondent,body}
+ */
 function sendMail(mail){
   if(!(mail&&mail.title&&mail.correspondent&&mail.body))
     return Promise.reject(mail)
@@ -31,6 +35,9 @@ function sendMail(mail){
           return resolve()
     })
   })
+  .catch(e=>{
+    logger.warn(e)
+  })
 }
 
 const dft={
@@ -42,7 +49,7 @@ function init(){
     const config=global.config.mail
     if(!(config&&config.master))
       global.config.mail=dft
-    return null
+    return resolve(null)
   })
 }
 

@@ -4,8 +4,9 @@ const fsp=require('fs').promises
 const Transport=require('winston-transport')
 const winston=require('winston')
 const util=require('util')
-const insert=require(path.resolve(basedir,'core','db','insert.js'))
+const insert=require(path.resolve(global.basedir,'core','db','insert.js'))
 const config=require(path.resolve(__dirname,'config.js'))
+const save=require(path.resolve(global.basedir,'core','config','save.js'))
 
 /* logger
  *
@@ -60,7 +61,11 @@ class MyLogger extends Transport{
     })
   }
   exit(){
+    return save()
+    .then(()=>{
+    save()
     process.exit(1)
+    })
   }
 }
 const logger=winston.createLogger({

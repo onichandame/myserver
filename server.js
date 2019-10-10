@@ -5,7 +5,7 @@ const sqlite3=require('sqlite3').verbose()
 const path = require('path')
 const app = express()
 const port = 8080
-const cookieParser=require('cookie-parser')
+const cookieparser=require('cookie-parser')
 const init=require(path.resolve(__dirname,'core','init.js'))
 
 app.set('views','views')
@@ -14,10 +14,11 @@ app.set('view engine','pug')
 app.use(express.static(path.join(__dirname, 'public')))
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended: false}))
-app.use(cookieParser())
+app.use(cookieparser())
 
 init()
 .then(()=>{
+
   app.use('/oauth',require(path.resolve(__dirname,'core','oauth','main.js')))
   
   app.use('/app',require(path.resolve(__dirname,'app','main.js')))

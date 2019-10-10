@@ -1,0 +1,25 @@
+html(lang="en")
+  head
+    style.
+      body{
+        padding-top:7.7%;
+      }
+      div{
+        color:#ffffff;
+        padding-left:8.7%;
+        padding-right:8.7%
+      }
+      h1,p{
+        font-size:1.5rem;
+      }
+
+  body
+    div
+      h1(class="title") Hi #{username}, your app #{name} has successfully been registered.
+    div
+      p(class="body") Here is #{name}'s registration info:
+      ul 
+        li Name: #{name}
+        li Type: #{type}
+        li Redirect URI: #{redirect_uri}
+        li secret: #{secret}

@@ -11,12 +11,11 @@ const tbls=[
     name:'TableUser',
     cols:{
       username:'TEXT NOT NULL',
-      active:'INT NOT NULL',
+      active:'INT NOT NULL', //0: inactive; 1: active
       email:'TEXT NOT NULL',
       password:'TEXT NOT NULL',
       created_at:'TEXT NOT NULL',
-      permission:'INT NOT NULL',
-      last_login:'TEXT'
+      permission:'INT NOT NULL' //0: admin(only); 1: maintainer; 2: user 3: guest
     }
   },
   {
@@ -25,9 +24,9 @@ const tbls=[
       name:'TEXT NOT NULL',
       redirect_uri:'TEXT NOT NULL',
       secret:'TEXT NOT NULL',
-      type:'INT NOT NULL',
+      type:'INT NOT NULL', //0:web; 1:native
       approved_by:'INT NOT NULL',
-      permissioni:'INT NOT NULL'
+      permission:'INT NOT NULL' //0x01: read; 0x10: write
     }
   },
   {

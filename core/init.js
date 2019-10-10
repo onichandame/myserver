@@ -30,6 +30,7 @@ function init(){
     process.exit(1)
   })
 }
+
 function findBaseDir(){
   const files=['server.js','package.json']
   const dirs=['core','node_modules','views']
