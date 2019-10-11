@@ -88,9 +88,6 @@ The server is created using Pug with express as the backend.
 - **Register app** /newapp POST
 - **Delete user** /deluser POST
 - **Delete app** /delapp POST
-- **Activate user** /activate GET&POST
 - **Reset user** /resetuser POST
 - **Request user** /request POST
-- **Authenticate user** /authenticate GET&POST
 - **Issue code** /authorize GET
-- **Issue token** /token POST

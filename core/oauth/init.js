@@ -26,7 +26,7 @@ const tbls=[
       secret:'TEXT NOT NULL',
       type:'INT NOT NULL', //0:web; 1:native
       approved_by:'INT NOT NULL',
-      permission:'INT NOT NULL' //0x01: read; 0x10: write
+      permission:'INT NOT NULL' //1: read; 2: write; 3:admin(only)
     }
   },
   {

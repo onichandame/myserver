@@ -41,7 +41,7 @@ function decode(token){
     return jwt.verify(token,key,{algorithm:'HS256'})
   })
   .catch(e=>{
-    return logger.error(e)
+    return Promise.resolve()
   })
 }
 

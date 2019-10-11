@@ -60,5 +60,54 @@
       "Clear cookies and refresh page",
       "If the error persists, contact the maintainer of this site"
     ]
+  },
+  {
+    "code":0,
+    "description":"No error",
+    "solutions":[
+    ]
+  },
+  {
+    "code":1,
+    "description":"Request cannot be properly processed because the server cannot understand it.",
+    "solutions":[
+      "Review the request and re-try",
+      "Contact the maintainer of the website"
+    ]
+  },
+  {
+    "code":2,
+    "description":"The client cannot be found.",
+    "solutions":[
+      "Contact the maintainer of the client"
+    ]
+  },
+  {
+    "code":3,
+    "description":"The grant is invalid",
+    "solutions":[
+      "Check password/token/redirect uri"
+    ]
+  },
+  {
+    "code":4,
+    "description":"The scope requested cannot be accessed by the client",
+    "solutions":[
+      "Change to another scope"
+    ]
+  },
+  {
+    "code":5,
+    "description":"The request type is not allowed for this client",
+    "solutions":[
+      "Change to another request type"
+    ]
+  },
+  {
+    "code":6,
+    "description":"The requested grant is of an unavailable type",
+    "solutions":[
+      "Change to another grant type"
+    ]
   }
 ]

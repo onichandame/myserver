@@ -8,20 +8,33 @@ const select=require(path.resolve(global.basedir,'core','db','select.js'))
 module.exports=function(err,req,res,next){
   function send(){
     if(!err)
-      return new Promise((resolve,reject)=>{
-        return resolve(res.page ? res.render(res.page) : res.send())
-      })
+      return Promise.resolve(res.page ? res.render(res.page) : res.body ? res.send(body) : res.send())
     if(err.code)
-      res.status(err.code)
+      return rejectAuth()
     else
-      res.status(500)
-    return select('TableError',['code,description','solutions'],'code='+res.status)
-    .then(rows=>{
+      return rejectBrow()
+
+    function rejectAuth(){
+      res.status(400)
+      return select('TableError',['code,description','solutions'],'code='+err.code)
+      .then(reply)
+    }
+
+    function rejectBrow(){
+      if(err.code)
+        res.status(err.code)
+      else
+        res.status(500)
+      return select('TableError',['code,description','solutions'],'code='+res.status)
+      .then(reply)
+    }
+    
+    function reply(rows){
       if(rows.length!=1)
-        throw 'code '+res.status+' requires description and solutions!'
+        throw 'code '+err.code+' requires definition!'
       res.render('error.pug',{code:res.status,desc:rows[0].description,sol:rows[0].solutions})
-      return null
-    })
+      return Promise.resolve()
+    }
   }
 
   function log(){
