@@ -49,7 +49,7 @@ module.exports=function(req,res,next){
     .catch(handleError)
 
     function reply(){
-      return select('TableUser',['email','password','username','active','rowid'],'email=\''+email+'\'')
+      return select('TableUser',['type','email','password','username','active','rowid AS uid'],'email=\''+email+'\'')
       .then(userExists)
       .then(authenticate)
       .then(issue)
@@ -61,7 +61,7 @@ module.exports=function(req,res,next){
       }
 
       function authenticate(row){
-        if(!active)
+        if(!row.active)
           return Promise.reject(3)
         return hash(password)
         .then(h=>{
@@ -69,25 +69,25 @@ module.exports=function(req,res,next){
             return Promise.reject(3)
           delete row.password
           delete row.active
+          switch(row.type){
+            case 1:
+              row.type='native'
+              break
+            default:
+              row.type='web'
+              break
+          }
           row.cid=client_id
           row.iat=new Date().getTime()/1000
           row.scope=scope
-          var obj={}
-          switch(response_type){
-            case 'code':
-              obj.grant_type=1
-              break
-            case 'token':
-              obj.grant_type=2
-              break
-          }
-          obj.info=row
-          return obj
+          return row
         })
       }
 
       function issue(obj){
-        if(obj.grant_type==1)
+        delete obj.type
+        if(response_type=='code'){
+          obj.grant_type=response_type
           return encode(obj)
           .then(jwt=>{
             res.body=jwt
@@ -95,13 +95,17 @@ module.exports=function(req,res,next){
             res.set('Location',redirect_uri+'?code='+jwt)
             return next()
           })
-        else if(obj.grant_type==2)
-          return encode(obj.info)
+        }else if(response_type=='token'){
+          obj.exp=3600
+          return encode(obj)
           .then(jwt=>{
             res.status(301)
             res.set('Location',redirect_uri+'#'+jwt)
             return next()
           })
+        }else{
+          return Promise.reject(6)
+        }
       }
     }
   }else{

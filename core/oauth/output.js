@@ -10,13 +10,13 @@ module.exports=function(err,req,res,next){
     if(!err)
       return Promise.resolve(res.page ? res.render(res.page) : res.body ? res.send(body) : res.send())
     if(err.code)
-      return rejectAuth()
-    else
       return rejectBrow()
+    else
+      return rejectAuth()
 
     function rejectAuth(){
       res.status(400)
-      return select('TableError',['code,description','solutions'],'code='+err.code)
+      return select('TableError',['code,description','solutions'],'code='+err)
       .then(reply)
     }
 
