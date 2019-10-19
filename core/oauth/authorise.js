@@ -49,7 +49,7 @@ module.exports=function(req,res,next){
     .catch(handleError)
 
     function reply(){
-      return select('TableUser',['type','email','password','username','active','rowid AS uid'],'email=\''+email+'\'')
+      return select('TableUser',['email','password','username','active','rowid AS uid'],'email=\''+email+'\'')
       .then(userExists)
       .then(authenticate)
       .then(issue)
