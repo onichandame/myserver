@@ -16,137 +16,181 @@ const {hash,decode,encode}=require(path.resolve(global.basedir,'core','util','en
 
 /* validate and process auth request step by step
  * returns code or token based on request
- * 0: already finished
- * 1: invalide request
- * 2: invalid client
- * 3: invalid grant
- * 4: invalid scope
- * 5: unauthorized authorisation method
- * 6: unsupported grant type
+ * 1: invalide client
+ * 2: invalid scope
+ * 3: invalid credentials
+ * 4: unauthorized authorisation method
+ * 5: unsupported grant type
  */
-module.exports=function(req,res,next){
+module.exports=function(req,res,next)
+{
   const {response_type,client_id,redirect_uri,scope}=req.query
 
-  if(req.method=='GET'){
-    return checkRequest()
-    .then(checkClient)
-    .then(login)
-    .catch(handleError)
+  return checkClient()
+  then(checkRequest)
+  .then(handleRequest)
+  .catch(handleError)
+  .then(reply)
 
-    function login(){
-      if(!(req.method=='GET'))
-        return next({code:405})
-      res.status(200)
-      res.page=path.resolve('oauth','login.pug')
-      return next()
-    }
-  //handle login post
-  }else if(req.method=='POST'){
-    const {email,password}=req.body
-    return checkRequest()
-    .then(checkClient)
-    .then(reply)
-    .catch(handleError)
-
-    function reply(){
-      return select('TableUser',['email','password','username','active','rowid AS uid'],'email=\''+email+'\'')
-      .then(userExists)
-      .then(authenticate)
-      .then(issue)
-
-      function userExists(rows){
-        if(!rows.length)
-          return Promise.reject(3)
-        return rows[0]
-      }
-
-      function authenticate(row){
-        if(!row.active)
-          return Promise.reject(3)
-        return hash(password)
-        .then(h=>{
-          if(h!=row.password)
-            return Promise.reject(3)
-          delete row.password
-          delete row.active
-          switch(row.type){
-            case 1:
-              row.type='native'
-              break
-            default:
-              row.type='web'
-              break
-          }
-          row.cid=client_id
-          row.iat=new Date().getTime()/1000
-          row.scope=scope
-          return row
-        })
-      }
-
-      function issue(obj){
-        delete obj.type
-        if(response_type=='code'){
-          obj.grant_type=response_type
-          return encode(obj)
-          .then(jwt=>{
-            res.body=jwt
-            res.status(301)
-            res.set('Location',redirect_uri+'?code='+jwt)
-            return next()
-          })
-        }else if(response_type=='token'){
-          obj.exp=3600
-          return encode(obj)
-          .then(jwt=>{
-            res.status(301)
-            res.set('Location',redirect_uri+'#'+jwt)
-            return next()
-          })
-        }else{
-          return Promise.reject(6)
-        }
-      }
-    }
-  }else{
-    return next({code:405})
-  }
-
-  function checkRequest(){
-    const supported_types=['token','code']
-    const supported_scopes=['read','write']
-    if(!(redirect_uri&&supported_types.indexOf(response_type)>=0&&client_id>=0&&supported_scopes.indexOf(scope)>=0))
-      return Promise.reject(1)
-    return Promise.resolve()
-  }
-
-  function checkClient(){
-    return select('TableApp',['permission,redirect_uri'],'rowid='+client_id)
+  function checkClient()
+  {
+    return select('TableApp',['type','permission','redirect_uri'],'rowid='+client_id)
     .then(rows=>{
       if(rows.length<1)
-        return Promise.reject(2)
+        return Promise.reject(1)
+      let s=0;
       switch(scope){
         case 'read':
-          scope=1
+          s=1
           break
         case 'write':
-          scope=2
+          s=2
+          break
+        default:
+          return Promise.reject(2)
           break
       }
-      if(rows[0].permission<scope)
-        return Promise.reject(4)
-      if(rows[0].redirect_uri!=redirect_uri)
-        return Promise.reject(3)
+      let row=rows[0]
+      if(row.permission<s)
+        return Promise.reject(2)
+      if(response_type=='code' && row.redirect_uri!=redirect_uri)
+        return Promise.reject(1)
+      if(response_type=='token' && row.type!=0)
+        return Promise.reject(5)
       return Promise.resolve()
     })
   }
 
-  function handleError(flag){
-    if(flag==0)
+  function handleRequest()
+  {
+    if(req.method=='GET'){
+      return new Promise((resolve,reject)=>{
+        res.status(200)
+        res.page=path.resolve('oauth','login.pug')
+        return resolve()
+      })
+    }else if(req.method=='POST'){
+
+      const {email,password}=req.body
+
+      return select('TableUser',['email','password',,'active','rowid AS id'],'email=\''+email+'\'')
+      .then(validateUser)
+      .then(issue)
+      .then(finalize)
+
+      function validateUser(rows){
+        if(!rows.length)
+          return Promise.reject(3)
+        let row=rows[0]
+        if(!row.active)
+          return Promise.reject(3)
+        return hash(password)
+        .then(p=>{
+          if(h==row.password)
+            return row
+          else
+            return Promise.reject(3)
+        })
+      }
+
+      function issue(row){
+        let code={
+          uid:row.id,
+          iat:new Date().getTime()/1000,
+          cid:client_id,
+          scope:scope
+        }
+        switch(response_type){
+          case 'token':
+            code.exp=3600*24
+            break
+          case 'code':
+            code.type='bearer'
+            break
+          default:
+            return Promise.reject(5)
+            break
+        }
+        return Promise.resolve(code)
+      }
+
+      function finalize(code)
+      {
+        return encode(code)
+        .then(jwt=>{
+          switch(response_type){
+            case 'token':
+              res.status(301)
+              res.set('Location',redirect_uri+'#'+jwt)
+              break
+            case 'code':
+              res.status(301)
+              res.set('Location',redirect_uri+'?code='+jwt)
+              break
+            default:
+              return Promise.reject(5)
+              break
+          }
+          return
+        })
+      }
+    }else{
+      res.status(405)
       return Promise.resolve()
-    else
-      return next({code:flag})
+    }
   }
 
+  function handleError(flag)
+  {
+    res.status(400)
+    switch(flag){
+      case 1:
+        res.body={
+          error:'invalid client',
+          error_description:'client cannot be identified. details will be provided in future versions'
+        }
+        break
+      case 2:
+        res.body={
+          error:'invalid scope',
+          error_description:'the required scope is not accessible by the client which raised the request'
+        }
+        break
+      case 3:
+        res.body={
+          error:'invalid credentials',
+          error_description:'the email or password provided do not point to a valid user'
+        }
+        break
+      case 4:
+        res.body={
+          error:'unauthorised authorizatoin method',
+          error_description:'the requested authorisation method is not supported or authorised'
+        }
+        break
+      case 5:
+        res.body={
+          error:'unsupported grant type',
+          error_description:'the grant type requested is not supported'
+        }
+        break
+      default:
+        res.status(500)
+        break
+    }
+    return Promise.resolve()
+  }
 
+  function reply()
+  {
+    if(!res.statusCode)
+      res.status(500)
+    if(res.page)
+      res.render(res.page)
+    else if(res.body)
+      res.send(res.body)
+    else
+      res.send()
+    return Promise.resolve(res)
+  }
 }

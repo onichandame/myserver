@@ -14,7 +14,7 @@ const tbls=[
       active:'INT NOT NULL', //0: inactive; 1: active
       email:'TEXT NOT NULL',
       password:'TEXT NOT NULL',
-      created_at:'TEXT NOT NULL',
+      created_at:'INT NOT NULL',
       permission:'INT NOT NULL' //0: admin(only); 1: maintainer; 2: user 3: guest
     }
   },
@@ -26,7 +26,7 @@ const tbls=[
       secret:'TEXT NOT NULL',
       type:'INT NOT NULL', //0:web; 1:native
       approved_by:'INT NOT NULL',
-      permission:'INT NOT NULL' //1: read; 2: write; 3:admin(only)
+      permission:'INT NOT NULL' //1: read; 2: write
     }
   },
   {

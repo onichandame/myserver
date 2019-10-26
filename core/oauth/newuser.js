@@ -16,114 +16,110 @@
 const path=require('path')
 const insert=require(path.resolve(global.basedir,'core','db','insert.js'))
 const select=require(path.resolve(global.basedir,'core','db','select.js'))
+const update=require(path.resolve(global.basedir,'core','db','update.js'))
 const randomstring=require('randomstring')
 const sender=require(path.resolve(global.basedir,'core','util','mail.js')).sendActivationCode
 const {hash,encode}=require(path.resolve(global.basedir,'core','util','encrypt.js'))
 
+// 1: request invalid
+// 2: credentials invalid
+// 3: resource conflict
+// 4: internal error
 module.exports=function(req,res,next){
   const code=req.query.code
-  const uid=req.query.uid
-  if(req.method=='GET'){
-    if(code&&uid){
-      return select('TableUser',['password'],'uid='+uid)
-      .then(rows=>{
-        if(!rows.length)
-          return next({code:404})
-        if(code!=rows[0].password)
-          return next({code:422})
-        res.status(200)
-        res.page=path.resolve('oauth','newpass.pug')
-        return next()
-      })
+  const id=req.query.id
+  const email=req.body.email
+  const username=req.body.username 
+  const password=req.body.pass
+
+  return checkRequest()
+  .then(handleRequest)
+  .catch(handleError)
+  .then(reply)
+
+  function checkRequest()
+  {
+    if(req.method=='POST'){
+      if(id && code)
+        if(/^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,16}$/.test(req.body.password)) return Promise.resolve()
+        else return Promise.reject(1)
+      else
+        if(username && email) return Promise.resolve()
+        else return Promise.reject(1)
     }else{
-      return Promise.resolve(res.render(path.resolve('oauth','newuser.pug')))
+      return Promise.resolve()
     }
-  }else if(req.method=='POST'){
-    if(code&&uid){
-      const password=req.body.pass
-      var regex=/^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,16}$/
-      return new Promise((resolve,reject)=>{
-        if(!regex.test(password))
-          return resolve(next({code:422}))
-        return select('TableUser',['password','active'],'rowid='+uid)
+  }
+
+  function handleRequest()
+  {
+    return checkUser()
+    .then(finalize)
+
+    function checkUser()
+    {
+      if(id && code)
+        return select('TableUser',['active','password'],'rowid='+id)
         .then(rows=>{
-          if(!rows.length)
-            return next({code:404})
-          if(!(!rows[0].active)&&rows[0].password==code)
-            return next({code:422})
+          if(!rows.length) return Promise.reject(2)
+          let row=rows[0]
+          if(row.active!=0) return Promise.reject(3)
+          return hash(code)
+          .then(c=>{
+            if(row.password!=c) return Promise.reject(4)
+          })
+        })
+      else
+        return select('TableUser',['rowid'],'email='+email)
+        .then(rows=>{
+          if(rows.length) return Promise.reject(3)
+        })
+    }
+
+    function finalize()
+    {
+      if(req.method=='GET'){
+        res.status(200)
+        if(id && code) res.page=path.resolve('oauth','newpass.pug')
+        res.page=path.resolve('oauth','newuser.pug')
+        return Promise.resolve()
+      }else if(req.method=='POST'){
+        if(id && code){
           return hash(password)
           .then(p=>{
-            update('TableUser',{active:1,password:p},'rowid='+uid)
-            .then(()=>{
-              return select('TableUser',['password','active'],'rowid='+uid)
-              .then(rows=>{
-                if(!rows.length)
-                  return logger.warn({message:'uid:'+uid+' failed to update password'})
-                  .then(()=>{
-                    return next()
-                  })
-                if(!(rows[0].active&&rows[0].password==p))
-                  return logger.warn({message:'uid'+uid+' updated wrong password or active'})
-                  .then(()=>{
-                    return next()
-                  })
-                res.status(200)
-                return next()
-              })
+            return update('TableUser',{password:p,active:1},'rowid='+id)
+            .then(changes=>{
+              if(!changes) return Promise.reject(4)
             })
           })
-        })
-      })
-    }else{
-
-      const {username,email}=req.body
-      return new Promise((resolve,reject)=>{
-        if(!(username&&email))
-          return resolve(next({code:422}))
-        else return resolve()
-      })
-      .then(checkConflict)
-      .then(saveUser)
-      .then(finalize)
-
-      // null: conflict
-      // 1: inactive account exists
-      // 2: no conflict
-      function checkConflict(){
-        return select('TableUser',['active','username','email'],'email='+email)
-        .then(rows=>{
-          if(rows.length&&rows[0].active)
-            return next({code:303})
-          else if(rows.length)
-            return 1
-          else
-            return 2
-        })
+        }else{
+          code=randomstring.generate({
+            length:20,
+            charset:'alphabetic'
+          })
+          return hash(code)
+          .then(c=>{
+            return insert('TableUser',{
+              username:username,
+              active:0,
+              email:email,
+              password:c,
+              created_at:new Date().getTime()/1000,
+              permission:2
+            })
+            .then(lastid=>{
+              if(!Number.isInteger(lastid)) return Promise.reject(4)
+            })
+          })
+        }
+      }else{
+        res.status(405)
+        return Promise.resolve()
       }
-      function saveUser(flag){
-        if(flag==1)
-          return update('TableUser',{username:username,password:randomstring.generate({length:20,charset:'alphabetic'}),active:0,created_at:new Date().toString(),permission:2})
-          .then(()=>{
-            return select('TableUser',['email','username','password','rowid'],'email=\''+email+'\'')
-            .then(rows=>{
-              if(!rows.length)
-                return logger.error(new Error('Failed to update user info '+email))
-              return rows[0]
-            })
-          })
-        else if(flag==2)
-          return insert('TableUser',{username:username,email:email,active:0,password:randomstring.generate({length:20,charset:'alphabetic'}),created_at:new Date().toString(),permission:2})
-          .then(lastid=>{
-            return select('TableUser',['password','username','email','rowid'],'rowid='+lastid)
-            .then(rows=>{
-              if(!rows.length)
-                return logger.error(new Error('Failed to insert user info '+email))
-              return rows[0]
-            })
-          })
-        else
-          return null
-      }
+    }
+  }
+}
+    /*
       function finalize(row){
         if(!row)
           return null
@@ -138,4 +134,4 @@ module.exports=function(req,res,next){
   }else{
     return next({code:405})
   }
-}
+  */
