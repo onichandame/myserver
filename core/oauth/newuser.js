@@ -18,7 +18,7 @@ const insert=require(path.resolve(global.basedir,'core','db','insert.js'))
 const select=require(path.resolve(global.basedir,'core','db','select.js'))
 const update=require(path.resolve(global.basedir,'core','db','update.js'))
 const randomstring=require('randomstring')
-const sender=require(path.resolve(global.basedir,'core','util','mail.js')).sendActivationCode
+const {sendMail}=require(path.resolve(global.basedir,'core','util','mail.js'))
 const {hash,encode}=require(path.resolve(global.basedir,'core','util','encrypt.js'))
 
 // 1: request invalid
@@ -107,9 +107,21 @@ module.exports=function(req,res,next){
               created_at:new Date().getTime()/1000,
               permission:2
             })
-            .then(lastid=>{
-              if(!Number.isInteger(lastid)) return Promise.reject(4)
+          })
+          .then(lastid=>{
+            if(!Number.isInteger(lastid)) return Promise.reject(4)
+            return mail()
+            .then(()=>{
+              res.status(200)
             })
+
+            function mail(){
+              return sendMail({
+                title:'Activate your account',
+                correspondent:email,
+                body:pug.renderFile(path.resolve(__dirname,'activate.pug'),{username:username,lk:req.protocol+'://'+req.hostname+':8080'+req.path+'?id='+lastid+'&code='+code})
+              })
+            }
           })
         }
       }else{
@@ -119,19 +131,3 @@ module.exports=function(req,res,next){
     }
   }
 }
-    /*
-      function finalize(row){
-        if(!row)
-          return null
-        row.lk=req.protocol+'://'+req.hostname+':8080'+req.path+'?code='+row.password
-        return sender(row)
-        .then(()=>{
-          res.status(200)
-          return next()
-        })
-      }
-    }
-  }else{
-    return next({code:405})
-  }
-  */

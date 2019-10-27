@@ -1,11 +1,13 @@
 const path=require('path')
 const insert=require(path.resolve(global.basedir,'core','db','insert.js'))
 const select=require(path.resolve(global.basedir,'core','db','select.js'))
-const checkClient=require(path.resolve(__dirname,'checkClient.js'))
+const checkClient=require(path.resolve(__dirname,'common','checkClient.js'))
 
 module.exports=function(req,res,next){
-  const {client_id,secret}=req.query
-  const {uid,token}=req.body
+  const client_id=req.query.client_id
+  const secret=req.query.secret
+  const uid=req.body.uid
+  const token=req.cookies.token
 
   return checkRequest()
   .then(checkBody)

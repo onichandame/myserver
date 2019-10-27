@@ -4,13 +4,6 @@ const logger=require(path.resolve(global.basedir,'core','logger','logger.js'))
 
 const viewdir=path.resolve(__dirname,'mail')
 
-function sendActivationCode(info){
-  info.title='Activate Your Account'
-  info.body=pug.renderFile(path.resolve(viewdir,'activate.pug'),info)
-  info.correspondent=info.email
-  return sendMail(info)
-}
-
 function sendApp(info){
   info.title='Your app has been registered'
   info.body=pug.renderFile(path.resolve(viewdir,'newapp.pug'),info)
@@ -54,7 +47,6 @@ function init(){
 }
 
 module.exports={
-  sendActivationCode:sendActivationCode,
-  sendApp:sendApp,
+  sendMail:sendMail,
   init:init
 }

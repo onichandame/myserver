@@ -3,7 +3,7 @@ const insert=require(path.resolve(global.basedir,'core','db','insert.js'))
 const select=require(path.resolve(global.basedir,'core','db','select.js'))
 const {hash,decode,encode}=require(path.resolve(global.basedir,'core','util','encrypt.js'))
 
-/* 1: invalide request
+/* 1: invalid request
  * 2: invalid client
  * 3: invalid grant
  * 4: invalid scope
@@ -11,8 +11,12 @@ const {hash,decode,encode}=require(path.resolve(global.basedir,'core','util','en
  * 6: unsupported grant type
  */
 module.exports=function(req.res.next){
-  const {client_id,client_secret,grant_type,code,redirect_uri}=req.query
-  const {refresh_token}=req.query
+  const client_id=req.query.client_id
+  const client_secret=req.query.client_secret
+  const grant_type=req.query.grant_type
+  const code=req.query.code
+  const redirect_uri=req.query.redirect_uri
+
   return checkRequest()
   .then(checkCode)
   .then(issueToken)

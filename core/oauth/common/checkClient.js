@@ -6,11 +6,12 @@ module.exports=function(client){
   .then(rows=>{
     if(!rows.length)
       return Promise.reject()
-    if(client.redirect_uri)
-      if(client.redirect_uri!=rows[0].redirect_uri)
-        return Promise.reject()
-    if(client.secret==rows[0].secret)
+    let row=rows[0]
+    if(client.redirect_uri && client.redirect_uri!=row.redirect_uri)
+      return Promise.reject()
+    else if(client.secret && client.secret!=row.secret)
+      return Promise.reject()
+    else
       return Promise.resolve()
-    return Promise.reject()
   })
 }

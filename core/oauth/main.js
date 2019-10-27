@@ -5,15 +5,15 @@ var router=express.Router()
 router.get('/newuser',require(path.resolve(__dirname,'newuser.js')))
 
 // deluser?client_id&secret
-// POST: user id&token
+// POST: user id
 router.post('/deluser',require(path.resolve(__dirname,'deluser.js')))
 
 // delapp?client_id&secret
-// POST: app id&token
+// POST: app id
 router.post('/delapp',require(path.resolve(__dirname,'delapp.js')))
 
 // resetuser?client_id&secret
-// POST: user id&token
+// POST: user id
 router.post('/resetuser',require(path.resolve(__dirname,'resetuser.js')))
 
 // request
