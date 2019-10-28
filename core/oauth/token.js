@@ -21,42 +21,45 @@ module.exports=function(req.res.next){
   .then(checkCode)
   .then(issueToken)
   .catch(handleError)
+  .then(reply)
 
   function checkRequest(){
-    const supported_types=['authorization_token','refresh_token']
-    if(!(client_id>=0&&client_secret))
-      return Promise.reject(1)
-    if(grant_type==supported_types[0])
-      return Promise.resolve(1)
-    else if(grant_type==supported_types[1])
-      return Promise.resolve(2)
-    else
-      return Promise.reject(6)
+    return checkClient()
+    .then(checkGrantType)
+
+    function checkClient()
+    {
+      return hash(client_secret)
+      .then(s=>{
+        if(!s) return Promise.reject(2)
+        return select('TableApp',['secret AS s','redirect_uri AS uri'],'rowid='+client_id)
+      })
+      .then(rows=>{
+        if(!rows.length) return Promise.reject(2)
+        const row=rows[0]
+        if(row.s!=s) return Promise.reject(2)
+        return row
+      })
+    }
+
+    function checkGrantType(row)
+    {
+      if(grant_type=='authorization_token'){
+        if(row.uri!=redirect_uri) return Promise.reject(2)
+      }else if(grant_type=='refresh_token'){
+      }else{
+        return Promise.reject(3)
+      }
+      return Promise.resolve()
+    }
   }
 
-  function checkCode(flag){
-    if(flag==1)
-      return decode(code)
-      .then(obj=>{
-        if(obj.grant_type=='code')
-          return obj
-        else
-          return Promise.reject(6)
-      })
-    else if(flag==2)
-      return decode(code)
-      .then(obj=>{
-        const {old,type}=obj
-        if(!(obj&&old&&type=='refresh_token'))
-          return Promise.reject(3)
-        return decode(old)
-        .then(obj=>{
-          const {iat,exp,nbf,iss}=obj
-          if(!(obj&&iat&&exp&&nbf&&iss=='xiao\'s'&&nbf<new Date().getTime()/1000&&iat+exp<new Date().getTime()/1000))
-            return Promise.reject(3)
-          return obj
-        })
-      })
+  function checkCode(){
+    if(grant_type=='authorization_token'){
+    }else if(grant_type=='refresh_token'){
+    }else{
+      return Promise.reject(3)
+    }
   }
 
   function issueToken(obj){
