@@ -1,0 +1,10 @@
+extends form.pug 
+
+block form
+  div(class="form-group")
+    div(class="pass input-group input-group-lg row")
+      input(type="email",class="form-control",name="email",placeholder="email")
+  div(class="row justify-content-center")
+    button(id="submit",type="submit",class="col-xs-10 col-md-6 col-lg-3 btn btn-primary col center-block",style="font-size:1.5rem;") Submit
+block append script
+  script(src="/resetuser.js")

@@ -4,21 +4,22 @@ var router=express.Router()
 
 router.get('/newuser',require(path.resolve(__dirname,'newuser.js')))
 
-// deluser?client_id&secret
-// POST: user id
+// deluser
+// POST: id
 router.post('/deluser',require(path.resolve(__dirname,'deluser.js')))
 
-// delapp?client_id&secret
-// POST: app id
+// delapp
+// POST: id
 router.post('/delapp',require(path.resolve(__dirname,'delapp.js')))
 
-// resetuser?client_id&secret
-// POST: user id
-router.post('/resetuser',require(path.resolve(__dirname,'resetuser.js')))
+// resetuser
+// POST: id/email
+// GET
+router.all('/resetuser',require(path.resolve(__dirname,'resetuser.js')))
 
 // request
-// POST: token
-router.post('/request',require(path.resolve(__dirname,'request.js')))
+// GET
+router.get('/request',require(path.resolve(__dirname,'request.js')))
 
 // authorise?response_type&client_id&redirect_uri&scope
 router.all('/authorise',require(path.resolve(__dirname,'authorise.js')))
@@ -28,6 +29,6 @@ router.get('/token',require(path.resolve(__dirname,'token.js')))
 
 router.get('/newapp',require(path.resolve(__dirname,'newapp.js')))
 
-// All above endpoints receives sid as cookies
+// All above endpoints receives Authorisation header for security
 
 module.exports=router

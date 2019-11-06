@@ -1,38 +1,74 @@
 /* Check if token expires and resolves scope on success rejects on failure
- * Allow JSON string or object to be passed on as input
- * Reject 401: invalid token
- * Resolve: valid token
+ * Reject: invalid token
+ * Resolve(token): valid token
+ * token: {cid,uid,scope}
  */
 const path=require('path')
 const {decode}=require(path.resolve(global.basedir,'core','util','encrypt.js'))
+const select=require(path.resolve(global.basedir,'core','db','select.js'))
 
-module.exports=function(t){
-  return normalizeToken()
-  .then(check)
+module.exports=function(req){
+  return getToken()
+  .then(validate)
 
-  function normalizeToken(){
-    let token={}
-    if(typeof t==='string')
-      try{
-        token=JSON.parse(t)
-      }catch(e){
-        return Promise.reject(401)
-      }
-    else if(t&&typeof t==='object'&&!(t instanceof Array))
-      token=t
-    else
-      return Promise.reject(401)
-    return token
+  function getToken(){
+    let auth=req.get('Authorization')
+    auth=auth.split(" ")
+    if(auth.length!=2) return Promise.reject()
+    if(auth[0].toLowerCase()!='Bearer') return Promise.reject()
+    return decode(auth[1])
   }
 
-  function check(token){
-    return decode(token.access_token)
-    .then(obj=>{
-      const {iss,nbf,iat,exp}=obj
-      if(!(obj&&iss&&nbf&&nbf<new Date().getTime()/1000&&iat&&exp&&iat+exp<new Date().getTime()/1000))
-        return Promise.reject(401)
-      return obj.info
-    })
-    .catch(e=>{return Promise.reject(401)})
+  function validate(token){
+    const uid=token.uid
+    const iat=token.iat
+    const exp=token.exp
+    const cid=token.cid
+    const scope=token.scope
+
+    return checkDate()
+    .then(checkClient)
+    .then(checkUser)
+    .then(()=>{return {
+      cid:cid,
+      uid:uid,
+      scope:scope
+    }})
+
+    function checkDate(){
+      if(new Date().getTime()/1000 > iat+exp) return Promise.reject()
+      else return Promise.resolve()
+    }
+
+    function checkClient(){
+      if(!Number.isInteger(cid)) return Promise.reject()
+      return select('TableApp',['permission'],'rowid='+cid)
+      .then(rows=>{
+        if(rows.length<1) return Promise.reject()
+        const row=rows[0]
+        let s=0
+        switch(scope.toLowerCase()){
+          case 'read':
+            s=1
+            break
+          case 'write':
+            s=2
+            break
+          default:
+            break
+        }
+        if(row.permission<s) return Promise.reject()
+      })
+    }
+
+    function checkUser(){
+      if(!Number.isInteger(uid)) return Promise.reject()
+      return select('TableUser',['active'],'rowid='+uid)
+      .then(rows=>{
+        if(rows.length<1) return Promise.reject()
+        const row=rows[0]
+        if(row.active<1) return Promise.reject()
+      })
+    }
   }
 }

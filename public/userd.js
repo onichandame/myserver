@@ -1,6 +1,4 @@
 $(document).ready(function(){
-  /*
-  const fileappd='apps.json'
   let xhr=new XMLHttpRequest()
   xhr.open('GET','/'+fileappd)
   xhr.send()
@@ -29,5 +27,4 @@ $(document).ready(function(){
     }catch(e){
     }
   }
-  */
 })

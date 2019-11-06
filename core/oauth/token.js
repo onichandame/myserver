@@ -3,7 +3,7 @@ const insert=require(path.resolve(global.basedir,'core','db','insert.js'))
 const select=require(path.resolve(global.basedir,'core','db','select.js'))
 const {hash,decode,encode}=require(path.resolve(global.basedir,'core','util','encrypt.js'))
 
-module.exports=function(req.res.next){
+module.exports=function(req,res,next){
   const client_id=req.query.client_id
   const client_secret=req.query.client_secret
   const grant_type=req.query.grant_type
@@ -121,10 +121,10 @@ module.exports=function(req.res.next){
       return encode(refresh)
       .then(r=>{
         res.body={
-          access_token:t
-          token_type:'bearer'
-          expires_in:token.exp
-          scope:token.scope
+          access_token:t,
+          token_type:'bearer',
+          expires_in:token.exp,
+          scope:token.scope,
           refresh_token:r
         }
       })

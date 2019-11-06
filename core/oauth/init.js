@@ -25,7 +25,8 @@ const tbls=[
       redirect_uri:'TEXT NOT NULL',
       secret:'TEXT NOT NULL',
       type:'INT NOT NULL', //0:web; 1:native
-      approved_by:'INT NOT NULL',
+      approved_by:'INT',
+      registered_by:'INT NOT NULL',
       permission:'INT NOT NULL' //1: read; 2: write
     }
   },

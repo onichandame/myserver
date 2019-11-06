@@ -3,59 +3,118 @@
  * 2. POST: register app
  */
 const path=require('path')
-const randomString=require('randomstring')
-const {validate}=require(path.resolve(__dirname,'..','util','validate.js'))
-const sender=require(path.resolve(__dirname,'..','util','mail.js')).sendApp
-const {select,insert}=require(path.resolve(__dirname,'..','util','db.js'))
+const insert=require(path.resolve(global.basedir,'core','db','insert.js'))
+const select=require(path.resolve(global.basedir,'core','db','select.js'))
+const randomstring=require('randomstring')
+const {sendMail}=require(path.resolve(global.basedir,'core','util','mail.js'))
+const {hash}=require(path.resolve(global.basedir,'core','util','encrypt.js'))
+const checkToken=require(path.resolve(__dirname,'common','checkToken.js'))
+
 module.exports=function(req,res,next){
-  const {sid,dat}=req.cookies('sid')
-  validate(sid,dat,(result)=>{
-    if(!result)
-      return next({code:401})
-    const {username,uid,email}=result
-    if(req.method=='GET'){
-        select('appadmin',['level'],'rowid='+uid,(row)=>{
-          if(row.level>1)
-            return next({code:403})
-          res.status(200)
-          res.locals.page='core/oauth/newapp.pug'
-          return next()
-        },(num)=>{
-          if(num<1)
-            return next({code:403})
-        })
-    }else if(req.method=='POST'){
-      const name=req.body.name
-      const callback=req.body.callback
-      const type=req.body.type
-      let valid=true
-      if(name.length<3)
-        valid=false
-      if(!/[^\s]/.test(callback))
-        valid=false
-      if(!(type==0||type==1))
-        valid=false
-      if(!valid)
-        return next({code:422})
-      select('app',['COUNT(rowid) as num'],'name=\''+name+'\'',(row)=>{
-        if(row.num>0)
-          return next({code:303})
-        select('app',['COUNT(rowid) as num'],'permission=3',(row)=>{
-          var permission=1
-          if(row.num<1)
-            permission=3
-          insert('app',{name:name,redirect_uri:callback,secret:randomstring.generate({length:20,charset:'alphabetic'}),permission:permission,type:type},(lastID)=>{
-            select('app',['secret','permission'],'rowid='+lastID,(row)=>{
-              sender({email:email,username:username,name:name,secret:row.secret,permission:row.permission,redirect_uri:callback})
-              res.status(200)
-              res.locals.page='core/oauth/success.newapp.pug'
-              return next()
-            })
-          })
+  return checkToken(req)
+  .catch(()=>{return Promise.reject(1)})
+  .then(handle)
+  .catch(handleError)
+  .then(reply)
+
+  function handle(token){
+    if(req.method=='GET')
+      return render()
+    else if(req.method=='POST')
+      return parseParam()
+      .then(validate)
+      .then(register)
+      .then(send)
+
+    function render(){
+      res.status(200)
+      res.page=path.resolve('oauth','newapp.pug')
+      return Promise.resolve()
+    }
+
+    function parseParam(){
+      let p={
+        name:req.body.name,
+        url:req.body.callback,
+        type:req.body.type
+      }
+      return Promise.resolve(p)
+    }
+
+    function validate(param){
+      return select('TableApp',['name','redirect_uri','approved_by'],`name='${param.name}' OR redirect_uri='${url}'`)
+      .then(rows=>{
+        if(rows.length<1) return Promise.reject(2)
+        if(!(param.name && param.url)) return Promise.reject(3)
+        return param
+      })
+    }
+
+    function register(param){
+      param.secret=randomstring.generate({
+        length:20,
+        charset:'alphabetic'
+      })
+      return hash(param.secret)
+      .then(h=>{
+        param.redirect_uri=param.url
+        param.registered_by=token.uid
+        param.permission=1
+        return insert('TableApp',param)
+        .then(()=>{return param})
+      })
+    }
+
+    function send(param){
+      return select('TableUser',['email','username'],'rowid='+token.uid)
+      .then(rows=>{
+        if(rows.length<1) return Promise.reject(1)
+        param.username=rows[0].username
+        return sendMail({
+          title:'App registered',
+          correspondent:rows[0].email,
+          body:pug.render(path.resolve(__dirname,'newapp.pug',param))
         })
       })
-    }else{
-      return next({code:405})
     }
-  })
+  }
+
+  function handleError(e){
+    res.status(400)
+    switch(e){
+      case 1:
+        res.body={
+          error:'invalid token',
+          error_description:'The token cannot be validated'
+        }
+        break
+      case 2:
+        res.body={
+          error:'conflict',
+          error_description:'The name or redirect uri has already been registered'
+        }
+        break
+      case 3:
+        res.body={
+          error:'invalid input',
+          error_description:'The input data is invalid(empty)'
+        }
+        break
+      default:
+        res.status(500)
+        res.body={
+          error:'unknown error',
+          error_description:'an unknown internal error occured'
+        }
+        break
+    }
+  }
+
+  function reply(){
+    if(!res.statusCode) res.status(500)
+    if(res.body) res.send(JSON.stringify(res.body))
+    else if(res.page) res.send(pug.render(res.page))
+    else res.send()
+    return Promise.resolve(res)
+  }
 }

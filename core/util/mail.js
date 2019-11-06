@@ -10,8 +10,6 @@ function sendApp(info){
   return sendMail(info)
 }
 
-/* compulsory argument: mail{title,correspondent,body}
- */
 function sendMail(mail){
   if(!(mail&&mail.title&&mail.correspondent&&mail.body))
     return Promise.reject(mail)

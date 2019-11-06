@@ -1,6 +1,7 @@
 const path=require('path')
 const insert=require(path.resolve(global.basedir,'core','db','insert.js'))
 const select=require(path.resolve(global.basedir,'core','db','select.js'))
+const drop=require(path.resolve(global.basedir,'core','db','drop.js'))
 const checkToken=require(path.resolve(__dirname,'common','checkToken.js'))
 
 module.exports=function(req,res,next){
@@ -9,7 +10,6 @@ module.exports=function(req,res,next){
   return checkToken(req)
   .catch(()=>{return Promise.reject(1)})
   .then(validateUser)
-  .then(validateToken)
   .then(finalize)
   .catch(handleError)
   .then(reply)
@@ -21,39 +21,20 @@ module.exports=function(req,res,next){
     .then(rows=>{
       if(rows.length<1) return Promise.reject(2)
       const row=rows[0]
-      if(!row.permission) return Promise.reject(2)
+      if(row.permission>1) return Promise.reject(2)
       return token
     })
   }
 
-  function validateToken(token){
-    const scope=token.scope
-    let s=0
-    switch(scope){
-      case 'read':
-        s=1
-        break
-      case 'write':
-        s=2
-        break
-      default:
-        break
-    }
-    if(s<2) return Promise.reject(3)
-    return Promise.resolve(token)
-  }
-
   function finalize(token){
     if(!Number.isInteger(id)) return Promise.reject(4)
-    return select('TableUser',['permission'],'rowid='+id)
+    return select('TableApp',['rowid'],'rowid='+id)
     .then(rows=>{
-      if(rows.length<1) return Promise.reject(4)
-      const row=rows[0]
-      if(!row[permission]) return Promise.reject(2)
+      if(rows.length<1) return Promise.reject(3)
     })
     .then(()=>{
-      return drop('TableUser','rowid='+id)
-      .catch(e=>{return Promise.reject(4)})
+      return drop('TableApp','rowid='+id)
+      .catch(e=>{return Promise.reject(3)})
     })
   }
 
@@ -73,12 +54,6 @@ module.exports=function(req,res,next){
         }
         break
       case 3:
-        res.body={
-          error:'unauthorised token',
-          error_description:'The token received was not authorised for this request'
-        }
-        break
-      case 4:
         res.body={
           error:'operation failed',
           error_description:'The request was validated but the operation failed for unknown reasons'
