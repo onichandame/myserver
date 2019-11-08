@@ -24,6 +24,7 @@ module.exports=function(req,res,next)
         if(rows.length<1) return Promise.reject(2)
         res.body=rows[0]
         res.status(200)
+        res.type('application/json')
       })
     })
   }
