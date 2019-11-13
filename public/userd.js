@@ -68,27 +68,10 @@ function updateuser(){
 
     function update(obj){
       if(!(obj && obj.text && obj.href && obj.menu)) return Promise.reject()
-      $('#userd').text(obj.text)
-      $('#userd').attr('href',obj.href)
-      obj.menu.forEach(block=>{
-        block.forEach(row=>{
-          $('.user .dropdown-menu').append(getHTML())
-
-          function getHTML(){
-            return `<a${getTags()}>${row.text}</a>`
-
-            function getTags(){
-              let result=''
-              Object.keys(row).forEach(key=>{
-                if(key!='text') result+=` key="${row[key]}"`
-              })
-              return result
-            }
-          }
-        })
-        $('.user .dropdown-menu').append('<div class="dropdown-divider"></div>')
+      return loadScript('/menu.js')
+      .then(()=>{
+        resetMenu($('#userd'),obj)
       })
-      if($('.user .dropdown-menu').children().length>0) $('.user .dropdown-menu').children().last().remove()
     }
   }
 }

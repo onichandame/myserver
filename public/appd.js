@@ -7,6 +7,7 @@ function updateapp(){
   return getXHR('GET',`/${filename}`)
   .then(response=>{
     response.forEach(app=>{
+      let menu=[]
       $('.app .dropdown-menu').append(getHTML())
 
       function getHTML(){
