@@ -29,9 +29,10 @@ function updateuser(){
 
   function finalize(user){
     let struc=(!(user && user.username && user.email && user.created_at && user.active && user.permission)) ? anonymous() : loggedin()
-    return struc.then(update)
+    return struc
+    .then(update)
 
-    function anonymous(){
+    function loggedin(){
       let res={}
       res.text=user.username
       res.href='/member/dashboard'
@@ -51,7 +52,7 @@ function updateuser(){
       return Promise.resolve(res)
     }
 
-    function loggedin(){
+    function anonymous(){
       let res={}
       res.text='guest'
       res.href='#'
@@ -70,7 +71,7 @@ function updateuser(){
       if(!(obj && obj.text && obj.href && obj.menu)) return Promise.reject()
       return loadScript('/menu.js')
       .then(()=>{
-        resetMenu($('#userd'),obj)
+        resetMenu($('#user'),obj)
       })
     }
   }

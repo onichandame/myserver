@@ -20,11 +20,11 @@ const update=require(path.resolve(global.basedir,'core','db','update.js'))
 const randomstring=require('randomstring')
 const {sendMail}=require(path.resolve(global.basedir,'core','util','mail.js'))
 const {hash,encode}=require(path.resolve(global.basedir,'core','util','encrypt.js'))
+const reply=require(path.resolve(global.basedir,'core','common','reply.js'))
 
 // 1: request invalid
 // 2: credentials invalid
 // 3: resource conflict
-// 4: internal error
 module.exports=function(req,res,next){
   const code=req.query.code
   const id=req.query.id
@@ -35,7 +35,7 @@ module.exports=function(req,res,next){
   return checkRequest()
   .then(handleRequest)
   .catch(handleError)
-  .then(reply)
+  .then(()=>{return reply(res)})
 
   function checkRequest()
   {
@@ -129,5 +129,67 @@ module.exports=function(req,res,next){
         return Promise.resolve()
       }
     }
+  }
+
+  function handleError(e){
+    res.status(400)
+    switch(e){
+      case 1:
+        res.body={
+          error:'invalid email',
+          error_description:'The email cannot be validated'
+        }
+        break
+      case 2:
+        res.body={
+          error:'invalid username',
+          error_description:'The username is of the wrong format'
+        }
+        break
+      case 3:
+        res.body={
+          error:'user exists',
+          error_description:'The username requested already exists'
+        }
+        break
+      case 4:
+        res.body={
+          error:'email exists',
+          error_description:'The email requested is already registered'
+        }
+        break
+      case 5:
+        res.body={
+          error:'invalid password',
+          error_description:'The password submitted is of the wrong format'
+        }
+        break
+      case 6:
+        res.body={
+          error:'user not found',
+          error_description:'The user requested cannot be found'
+        }
+        break
+      case 7:
+        res.body={
+          error:'credentials invalid',
+          error_description:'The user requested cannot be authenticated'
+        }
+        break
+      case 8:
+        res.body={
+          error:'user activated',
+          error_description:'The user requested is already activated'
+        }
+        break
+      default:
+        res.status(500)
+        res.body={
+          error:'internal error',
+          error_description:'an unknown error occurred in the server'
+        }
+        break
+    }
+    return Promise.resolve()
   }
 }

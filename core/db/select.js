@@ -10,7 +10,7 @@ function select(tbl,target,cond){
       })
       return result.slice(0,-1)
     }
-    return `SELECT ${getkv()} FROM ${tbl} WHERE ${cond}`
+    return `SELECT ${getkv()} FROM ${tbl}${cond ? ` WHERE ${cond}` : ''}`
   }
   return connect()
   .then(db=>{

@@ -6,13 +6,15 @@ function updateapp(){
   const filename='apps.json'
   return getXHR('GET',`/${filename}`)
   .then(response=>{
+    let menu=[]
+    let block=[]
     response.forEach(app=>{
-      let menu=[]
-      $('.app .dropdown-menu').append(getHTML())
-
-      function getHTML(){
-        return '<a class="dropdown-item" href="'+app.link+'">'+app.title+'</a>'
-      }
+      block.push({
+        text:app.title,
+        href:app.link
+      })
     })
+    menu.push(block)
+    return updateMenu($('.app'),menu)
   })
 }

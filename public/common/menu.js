@@ -15,9 +15,12 @@ function updateMenu(p,m){
         return `<a${getTags()}>${row.text}</a>`
 
         function getTags(){
+          if(!row.class) row.class=[]
+          if(!row.class.includes('dropdown-item')) row.class.push('dropdown-item')
           let result=''
           Object.keys(row).forEach(key=>{
-            if(key!='text') result+=` key="${row[key]}"`
+            if(Array.isArray(row[key])) result+=`key="${row[key].join(' ')"`
+            else if(typeof row[key]=='string' && key!='text') result+=` key="${row[key]}"`
           })
           return result
         }
@@ -26,4 +29,5 @@ function updateMenu(p,m){
     $('.user .dropdown-menu').append('<div class="dropdown-divider"></div>')
   })
   if(p.children('dropdown-menu').eq(0).children().length>0) p.children('dropdown-menu').eq(0).children().last().remove()
+  return Promise.resolve()
 }

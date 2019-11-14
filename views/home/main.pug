@@ -1,4 +1,4 @@
-extends base.pug
+extends ../base.pug
 
 append head
   link(rel="stylesheet",href="/main.css")
@@ -23,8 +23,8 @@ block overbar
             a(class="nav-link dropdown-toggle",id="userd",data-toggle="dropdown" aria-haspopup="true",aria-expanded="false",aria-label="expand",href="#") Account
             div(class="dropdown-menu",aria-labelledby="userd")
 block script
-  script(src="/hover.js")
-  script(src="/xhr.js")
-  script(src="/load.js")
-  script(src="/userd.js")
-  script(src="/appd.js")
+  script(src="/common/hover.js")
+  script(src="/common/xhr.js")
+  script(src="/common/load.js")
+  script(src="/home/userd.js")
+  script(src="/home/appd.js")
