@@ -18,8 +18,16 @@ router.post('/delapp',require(path.resolve(__dirname,'delapp.js')))
 router.all('/resetuser',require(path.resolve(__dirname,'resetuser.js')))
 
 // request
-// GET
-router.get('/request',require(path.resolve(__dirname,'request.js')))
+// GET?id
+router.get('/user',require(path.resolve(__dirname,'user.js')))
+
+// request
+// GET?id
+router.get('/app',require(path.resolve(__dirname,'app.js')))
+
+// request
+// GET?id&secret&<name|redirect_uri|type>
+router.get('/updateapp',require(path.resolve(__dirname,'updateapp.js')))
 
 // authorise?response_type&client_id&redirect_uri&scope
 router.all('/authorise',require(path.resolve(__dirname,'authorise.js')))

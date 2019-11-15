@@ -9,6 +9,7 @@ const randomstring=require('randomstring')
 const {sendMail}=require(path.resolve(global.basedir,'core','util','mail.js'))
 const {hash}=require(path.resolve(global.basedir,'core','util','encrypt.js'))
 const checkToken=require(path.resolve(__dirname,'common','checkToken.js'))
+const reply=require(path.resolve(global.basedir,'core','common','reply.js'))
 
 module.exports=function(req,res,next){
   return checkToken(req)
@@ -108,13 +109,5 @@ module.exports=function(req,res,next){
         }
         break
     }
-  }
-
-  function reply(){
-    if(!res.statusCode) res.status(500)
-    if(res.body) res.send(JSON.stringify(res.body))
-    else if(res.page) res.send(pug.render(res.page))
-    else res.send()
-    return Promise.resolve(res)
   }
 }

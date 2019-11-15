@@ -26,7 +26,7 @@ const tbls=[
       secret:'TEXT NOT NULL',
       type:'INT NOT NULL', //0:web; 1:native
       approved_by:'INT',
-      registered_by:'INT NOT NULL',
+      registered_by:'INT',
       permission:'INT NOT NULL' //1: read; 2: write
     }
   },
@@ -59,6 +59,31 @@ function storeError(e){
   })
 }
 
+function firstApp(){
+  return select('TableApp',['rowid'],'permission=2 LIMIT 1')
+  .then(rows=>{
+    if(rows.length) return
+    else return Promise.reject(1)
+  })
+  .catch(e=>{
+    if(e!=1) return Promise.reject(e)
+    const secret=randomstring.generate({
+      length:20,
+      charset:'alphabetic'
+    })
+    return hash(secret)
+    .then(h=>{
+      return insert('TableApp',{name:'main',redirect_uri:'',secret:h,type:0,permission:2})
+      .then(lastid=>{
+        let main={}
+        main.cid=lastid
+        main.secret=secret
+        return fsp.writeFile(path.resolve(__dirname,'main.json'),JSON.stringify(main))
+      })
+    })
+  })
+}
+
 function configure(){
   return fsp.readFile(path.resolve(__dirname,'error.json'),'utf8')
   .then(data=>{
@@ -67,6 +92,7 @@ function configure(){
     rows.forEach(row=>{p.push(storeError(row))})
     return Promise.all(p)
   })
+  .then(firstApp)
 }
 
 function init(){
