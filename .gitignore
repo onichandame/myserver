@@ -7,7 +7,7 @@ System\ Volume\ Information/
 sqlite3.dll
 sqlite3.def
 node_modules/
-/db
+/core/data
 *.swp
 test
 package-lock.json
