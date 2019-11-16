@@ -11,7 +11,7 @@
  * res.body: JSON/string/Number being sent
  * none of above: send without body
  *
- * resolves res on success, log error
+ * resolves res always, logs error
  */
 module.exports=function(res){
   return new Promise((resolve,reject)=>{

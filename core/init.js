@@ -12,55 +12,17 @@
 const path=require('path')
 const fs=require('fs')
 
-function init(){
-
-  global.basedir=findBaseDir()
+module.exports=function(){
 
   const initDB=require(path.resolve(__dirname,'db','init.js'))
   const initLog=require(path.resolve(__dirname,'logger','init.js'))
   const initUtil=require(path.resolve(__dirname,'util','init.js'))
-  const initOauth=require(path.resolve(__dirname,'oauth','init.js'))
-  const initHome=require(path.resolve(__dirname,'home','init.js'))
 
   return initDB()
-  .then(()=>{return initLog()})
-  .then(()=>{return initUtil()})
-  .then(()=>{return initOauth()})
-  .then(()=>{return initHome()})
-  .catch((err)=>{
-    console.log(err)
+  .then(initLog)
+  .then(initUtil)
+  .catch((e)=>{
+    console.log(e)
     process.exit(1)
   })
 }
-
-function findBaseDir(){
-  const files=['server.js','package.json']
-  const dirs=['core','node_modules','views']
-  let curdir=__dirname
-  var result=false
-  try{
-    while(!result){
-      let flag=true
-      files.forEach((file)=>{
-        const filename=path.resolve(curdir,file)
-        if(!(fs.existsSync(filename)&&fs.statSync(filename).isFile()))
-          flag=false
-      })
-      dirs.forEach((dir)=>{
-        const dirname=path.resolve(curdir,dir)
-        if(!(fs.existsSync(dirname)&&fs.statSync(dirname).isDirectory()))
-          flag=false
-      })
-      if(!flag)
-        curdir=path.resolve(curdir,'..')
-      else
-        result=curdir
-    }
-    return result
-  }catch(e){
-    console.log(e)
-    process.exit(1)
-  }
-}
-
-module.exports=init
