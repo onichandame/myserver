@@ -9,7 +9,19 @@ class Config{
       this._data_={}
       Config.instance=this
       set('basedir',path.resolve(__dirname,'..'))
-      set('filepath',path.resolve(get('basedir'),'config.json'))
+      .then(()=>{
+        return set('datadir',path.resolve(get('basedir'),'data'))
+      })
+      .then(()=>{
+        return set('filepath',path.resolve(get('basedir'),'config.json'))
+      })
+      .then(async ()=>{
+        return fsp.access(await get('datadir'), fs.constants.F_OK | fs.constants.R_OK | fs.constants.W_OK)
+        .catch(e=>{
+          if(e.code=='ENOENT' || e.code=='ENOTDIR') return fsp.mkdir(await get('datadir'))
+          else return Promise.reject(e)
+        })
+      })
 
       this.read=function(basedOnFile){
         return checkFile()

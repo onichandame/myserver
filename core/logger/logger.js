@@ -1,12 +1,9 @@
 const path=require('path')
 const fs=require('fs')
 const fsp=require('fs').promises
-const Transport=require('winston-transport')
-const winston=require('winston')
-const util=require('util')
+
 const insert=require(path.resolve(global.basedir,'core','db','insert.js'))
 const config=require(path.resolve(__dirname,'config.js'))
-const save=require(path.resolve(global.basedir,'core','config','save.js'))
 
 /* logger
  *
@@ -15,66 +12,73 @@ const save=require(path.resolve(global.basedir,'core','config','save.js'))
  * warn: non-blocking error
  * error: fatal error causing service to shutdown
  */
-const levels={error:0,
-              warn:1,
-              info:2,
-              debug:3
-}
-
-class MyLogger extends Transport{
-  constructor(opts){
-    super(opts)
+class Logger{
+  constructor(){
+    this.levels={error:0,
+                 warn:1,
+                 info:2,
+                 debug:3
+    }
+    if(!Logger.instance) Logger.instance=this
+    return Logger.instance
   }
-  log(obj){
+
+  log(lvl,msg){
+    if(typeof lvl==='string' && lvl in Object.keys(this.levels)) lvl=this.levels[lvl]
+    else if(!(Number.isInteger(lvl) && lvl in Object.values(this.levels))) return error(`undefined level ${lvl} received with message ${msg}`)
     return config()
-    .then((c)=>{
-      return insert(c.name,obj)
+    .then(c=>{
+      return insert(c.name,compliment(lvl,msg))
     })
   }
-  compliment(message,lvl){
-    return {message:message,level:levels.lvl,timestamp:new Date().toString()}
+
+  compliment(lvl,message){
+    return {message:message,level:lvl,timestamp:new Date().getTime()/1000}
   }
-  write(message,lvl){
-    return log(compliment(message,lvl))
-  }
+
   debug(message){
-    return write(message,'debug')
+    return typeof v8debug ==='object' ? log('debug',message) : Promise.resolve()
   }
+
   info(message){
-    return write(message,'info')
+    return log('info',message)
   }
+
   warn(message){
-    return write(message,'warn')
+    return log('warn',message)
   }
+
   error(message){
     const obj=compliment(message,'error')
     console.log(obj)
-    return log(obj)
-    .catch(err=>{
-      return fsp.write(path.resolve(global.basedir,'error.log'),obj)
-      .then(()=>{
-        return exit()
+    return writeFile()
+    .then(writeDB)
+    .finally(terminate)
+
+    function writeFile(){
+      return config()
+      .then(c=>{
+        return fsp.writeFile(c.errfile,JSON.stringify(obj))
       })
-      .catch(e=>{
-        return exit()
+    }
+
+    function writeDB(){
+      return config()
+      .then(c=>{
+        return insert(c.name,obj)
       })
-    })
-  }
-  exit(){
-    return save()
-    .then(()=>{
-    save()
-    process.exit(1)
-    })
+    }
+
+    function terminate(){
+      return new Promise((resolve,reject)=>{
+        process.exit(1)
+        return resolve()
+      })
+    }
   }
 }
-const logger=winston.createLogger({
-  levels:levels,
-  transports:[
-    new MyLogger()
-  ],
-  exitOnError:true,
-  silent:false
-})
+
+const logger=new Logger()
+Object.freeze(Logger)
 
 module.exports=logger

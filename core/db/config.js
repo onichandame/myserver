@@ -2,25 +2,19 @@ const path=require('path')
 const config=require(path.resolve(__dirname,'..','config','config.js'))
 
 const dft={
-  path:path.resolve(global.basedir,'data'),
-  name:'core.sqlite3'
+  path:'core.sqlite3'
 }
 
-function config(){
-  return config.get('db')
+module.exports=function(){
+  return config.get('datadir')
+  .then(d=>{dft.path=resolve(d,dft.path)})
+  .then(()=>{return config.get('db')})
   .then(old=>{
     if(!old) return config.set('db',dft)
-    Object.keys(dft).forEach(key=>{
-      if(!(key in old)) return config.set('db',dft)
-    })
+    const keys=Object.keys(dft)
+    for(int i=0;i<keys.length;++i){
+      if(!(keys[i] in old)) return config.set('db',dft)
+    }
   })
-  return get()
-  .then(c=>{
-    let param=c.db
-    if(!(param&&param.path&&param.name))
-      global.config.db=dft
-    return global.config.db
-  })
+  .then(()=>{return config.get('db')})
 }
-
-module.exports=config

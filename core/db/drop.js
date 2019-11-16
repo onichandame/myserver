@@ -8,9 +8,6 @@ function drop(tbl,cond){
   return connect()
   .then(db=>{
     return db.run(getsql())
-    .then(sql=>{
-      return sql.stmt
-    })
   })
 }
 
