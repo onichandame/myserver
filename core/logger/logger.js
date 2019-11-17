@@ -49,7 +49,7 @@ class Logger{
   }
 
   error(message){
-    const obj=compliment(message,'error')
+    const obj=compliment('error',typeof message==='object' ? message.message : typeof message==='string' ? message : 'undefined message')
     console.log(obj)
     return writeFile()
     .then(writeDB)

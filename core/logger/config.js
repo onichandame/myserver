@@ -1,5 +1,5 @@
 const path=require('path')
-const get=require(path.resolve('..','config','config.js'))
+const config=require(path.resolve('..','config','config.js'))
 
 const dft={
   name:'TableLog',
@@ -17,9 +17,8 @@ module.exports=function(){
   .then(old=>{
     if(!old) return config.set('logger',dft)
     const keys=Object.keys(dft)
-    for(int i=0;i<keys.length;++i){
-      if(!(keys[i] in old)) return config.set('db',dft)
-    }
+    for(int i=0;i<keys.length;++i)
+      if(!(keys[i] in old)) return config.set('logger',dft)
   })
   .then(()=>{return config.get('logger')})
 }

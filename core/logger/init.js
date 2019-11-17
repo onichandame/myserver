@@ -5,7 +5,7 @@ const fs=require('fs')
 const fsp=require('fs').promises
 
 const config=require(path.resolve(__dirname,'config.js'))
-const addtable=require(path.resolve(basedir,'core','db','addtable.js'))
+const addtable=require(path.resolve('..','db','addtable.js'))
 
 module.exports=function(){
   return config()
