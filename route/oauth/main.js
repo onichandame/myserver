@@ -1,5 +1,6 @@
 const express = require('express')
 const path = require('path')
+
 var router=express.Router()
 
 router.get('/newuser',require(path.resolve(__dirname,'newuser.js')))

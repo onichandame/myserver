@@ -5,6 +5,7 @@
   "dependencies": {
     "aes256": "^1.0.4",
     "cookie-parser": "^1.4.4",
+    "email-existence": "^0.1.6",
     "express": "^4.15.3",
     "jsonwebtoken": "^8.5.1",
     "mysql": "^2.17.1",
