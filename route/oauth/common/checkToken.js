@@ -4,8 +4,8 @@
  * token: {cid,uid,scope}
  */
 const path=require('path')
-const {decode}=require(path.resolve(global.basedir,'core','util','encrypt.js'))
-const select=require(path.resolve(global.basedir,'core','db','select.js'))
+const {decode}=require(path.resolve(__dirname,'..','core.js')).encrypt
+const {select}=require(path.resolve(__dirname,'..','core.js')).db
 
 module.exports=function(req){
   return getToken()

@@ -1,32 +1,20 @@
 const path=require('path')
-const insert=require(path.resolve(global.basedir,'core','db','insert.js'))
-const select=require(path.resolve(global.basedir,'core','db','select.js'))
+
+const {insert,select}=require(path.resolve(__dirname,'..','core.js')).db
 const checkToken=require(path.resolve(__dirname,'common','checkToken.js'))
+const {reply}=require(path.resolve(__dirname,'..','core.js')).common
+const logger=require(path.resolve(__dirname,'..','core.js')).logger
 
 module.exports=function(req,res,next){
+
   const id=req.body.id
 
-  return checkToken(req)
-  .catch(()=>{return Promise.reject(1)})
-  .then(validateUser)
-  .then(validateToken)
-  .then(finalize)
-  .catch(handleError)
+  return checkToken(req).catch(()=>{return Promise.reject(1)})
+  .then(handle)
+  .catch(error)
   .then(reply)
 
-  function validateUser(token){
-    const uid=token.uid
-    if(!Number.isInteger(uid)) return Promise.reject()
-    return select('TableUser',['permission'],'rowid='+uid)
-    .then(rows=>{
-      if(rows.length<1) return Promise.reject(2)
-      const row=rows[0]
-      if(!row.permission) return Promise.reject(2)
-      return token
-    })
-  }
-
-  function validateToken(token){
+  function handle(token){
     const scope=token.scope
     let s=0
     switch(scope){
@@ -39,67 +27,53 @@ module.exports=function(req,res,next){
       default:
         break
     }
-    if(s<2) return Promise.reject(3)
-    return Promise.resolve(token)
-  }
-
-  function finalize(token){
-    if(!Number.isInteger(id)) return Promise.reject(4)
-    return select('TableUser',['permission'],'rowid='+id)
+    if(s<2) return Promise.reject(2)
+    return select('TableUser',['rowid'],`rowid=${id}`)
     .then(rows=>{
-      if(rows.length<1) return Promise.reject(4)
-      const row=rows[0]
-      if(!row[permission]) return Promise.reject(2)
+      if(!rows.length) return Promise.reject(3)
     })
-    .then(()=>{
-      return drop('TableUser','rowid='+id)
-      .catch(e=>{return Promise.reject(4)})
-    })
+    .then(()=>{return drop('TableUser',`rowid=${id}`)})
+    .then(()=>{res.status(200)})
   }
 
-  function handleError(e){
-    res.status(400)
-    switch(e){
-      case 1:
-        res.body={
-          error:'invalid token',
-          error_description:'The token received did not pass validation'
-        }
-        break
-      case 2:
-        res.body={
-          error:'unauthorised user',
-          error_description:'The user did not pass validation'
-        }
-        break
-      case 3:
-        res.body={
-          error:'unauthorised token',
-          error_description:'The token received was not authorised for this request'
-        }
-        break
-      case 4:
-        res.body={
-          error:'operation failed',
-          error_description:'The request was validated but the operation failed for unknown reasons'
-        }
-        break
-      default:
-        res.status(500)
-        res.body={
-          error:'unknwon error',
-          error_description:'undefined error!'
-        }
-        break
+  function error(e){
+    let l=logger.info
+    return convertError()
+    .then(l)
+
+    function convertError(){
+      let m=''
+      res.status(400)
+      switch(e){
+        case 1:
+          res.body={
+            error:'invalid token',
+            error_description:'The token received did not pass validation'
+          }
+          break
+        case 2:
+          res.body={
+            error:'unauthorised token',
+            error_description:'The token received was not authorised for this request'
+          }
+          break
+        case 3:
+          res.body={
+            error:'user not found',
+            error_description:'The user being deleted is not found'
+          }
+          break
+        default:
+          res.status(500)
+          res.body={
+            error:'unknwon error',
+            error_description:'undefined error!'
+          }
+          l=logger.warn
+          break
+      }
+      m=Number.isInteger(e) ? res.body.error_description : e
+      return Promise.resolve(m)
     }
-    return Promise.resolve()
-  }
-
-  function reply(){
-    if(!res.statusCode) res.status(500)
-    if(res.body) res.send(JSON.stringify(res.body))
-    else if(res.page) res.render(page)
-    else res.send()
-    return Promise.resolve()
   }
 }
