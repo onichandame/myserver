@@ -1,4 +1,8 @@
 move to Express 5
 1. req.hostname include port in v5
 
-register home app at init
+register first user at initOauth
+
+separate oauth to another repo
+
+create npm modules for core and oauth
