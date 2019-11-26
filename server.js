@@ -3,10 +3,13 @@ const bodyParser=require('body-parser')
 const fs = require('fs')
 const sqlite3=require('sqlite3').verbose()
 const path = require('path')
+const cookieparser=require('cookie-parser')
+
+const init=require(path.resolve(__dirname,'core','init.js'))
+const logger=require(path.resolve(__dirname,'core','core.js')).logger
+
 const app = express()
 const port = 8080
-const cookieparser=require('cookie-parser')
-const init=require(path.resolve(__dirname,'core','init.js'))
 
 app.set('views','views')
 app.set('view engine','pug')
@@ -19,16 +22,17 @@ app.use(cookieparser())
 init()
 .then(()=>{
 
-  app.use('/oauth',require(path.resolve(__dirname,'core','oauth','main.js')))
+  app.use('/oauth',require(path.resolve(__dirname,'route','oauth','main.js')))
   
   app.use('/app',require(path.resolve(__dirname,'app','main.js')))
   
-  app.use('/',require(path.resolve(__dirname,'core','home','main.js')))
+  app.use('/',require(path.resolve(__dirname,'route','home','main.js')))
   
   app.listen(port, function (){
     console.log('Listening on port 8080!')
   })
 })
+.catch(logger.error)
 
 /*
 app.get('/video', function(req, res) {
