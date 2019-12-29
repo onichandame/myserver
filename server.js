@@ -1,12 +1,8 @@
+const path = require('path')
 const express = require('express')
 const bodyParser=require('body-parser')
-const fs = require('fs')
-const sqlite3=require('sqlite3').verbose()
-const path = require('path')
 const cookieparser=require('cookie-parser')
-
-const init=require(path.resolve(__dirname,'core','init.js'))
-const logger=require(path.resolve(__dirname,'core','core.js')).logger
+const okitchen=require('okitchen')
 
 const app = express()
 const port = 8080
@@ -19,9 +15,11 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended: false}))
 app.use(cookieparser())
 
-init()
+require(path.resolve(__dirname,'init.js'))()
 .then(()=>{
 
+  app.use('/auth',require(path.resolve(__dirname,'route','auth','main.js')))
+  
   app.use('/oauth',require(path.resolve(__dirname,'route','oauth','main.js')))
   
   app.use('/app',require(path.resolve(__dirname,'app','main.js')))
@@ -32,7 +30,7 @@ init()
     console.log('Listening on port 8080!')
   })
 })
-.catch(logger.error)
+.catch(e=>{return okitchen.logger.error(e)})
 
 /*
 app.get('/video', function(req, res) {

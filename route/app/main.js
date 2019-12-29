@@ -1,3 +1,6 @@
+/**
+ * @module routers/app
+ */
 module.exports=function(req,res){
   const path=require('path')
   if(req.path=='/worklog'){

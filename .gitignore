@@ -12,3 +12,5 @@ node_modules/
 test
 package-lock.json
 *.sqlite3
+data
+out

@@ -4,10 +4,6 @@ var router=express.Router()
 
 router.use(require(path.resolve(__dirname,'gateway.js')))
 
-router.post('/newadmin',require(path.resolve(__dirname,'newadmin.js')))
-
-router.get('/login',require(path.resolve(__dirname,'login.js')))
-
 router.get('/about',(req,res,next)=>{
   res.render(path.resolve('home','about.pug'))
 })
