@@ -14,3 +14,4 @@ package-lock.json
 *.sqlite3
 data
 out
+build

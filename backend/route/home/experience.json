@@ -1,0 +1,23 @@
+[
+  {
+    "title":"R&D Engineer",
+    "corp":"Neuboron Ltd.",
+    "desc":"develop radiotherapy systems.",
+    "achievements":[
+      "A bespoke Monte Carlo code",
+      "A High Throughput Cluster for Monte Carlo simulation",
+      "A Restful API server",
+      "A React frontend",
+      "Submodules of treatment planning system"
+    ]
+  },
+  {
+    "title":"Intern",
+    "corp":"Lancaster University",
+    "desc":"develop a neutrino detector",
+    "achievements":[
+      "A noise cancelling algorithm",
+      "Quality check an anode plane assembly"
+    ]
+    }
+]

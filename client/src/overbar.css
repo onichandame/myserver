@@ -1,0 +1,18 @@
+nav{
+  background-color:#222222;
+}
+nav *{
+  color:#bbbbbb !important;
+}
+.navbar>.navbar-brand{
+  cursor:pointer;
+}
+.nav-item>.dropdown-menu{
+  background-color:#404040;
+}
+.nav-item>.dropdown-menu>a{
+  color:#dddddd !important;
+}
+.nav-item>.dropdown-menu>a:hover{
+  background-color:#222222;
+}
