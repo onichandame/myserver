@@ -1,3 +1,6 @@
 [submodule "jobqueue"]
 	path = jobqueue
 	url = https://github.com/onichandame/jobqueue.git
+[submodule "central"]
+	path = central
+	url = git@github.com:onichandame/central-server.git
