@@ -4,3 +4,6 @@
 [submodule "central"]
 	path = central
 	url = git@github.com:onichandame/central-server.git
+[submodule "home"]
+	path = home
+	url = git@github.com:onichandame/personal-server.git
