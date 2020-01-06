@@ -6,4 +6,4 @@
 	url = git@github.com:onichandame/central-server.git
 [submodule "home"]
 	path = home
-	url = git@github.com:onichandame/personal-server.git
+	url = git@github.com:onichandame/homepage.git
